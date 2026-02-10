@@ -1,0 +1,46 @@
+@model Order
+
+@{
+    ViewData["Title"] = $"Order {Model.Id}";
+    var source = (string)(ViewData["Source"] ?? "");
+}
+
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1>Order @Model.Id</h1>
+        @if (!string.IsNullOrWhiteSpace(source))
+        {
+            <div class="text-muted">Source: @source</div>
+        }
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="@Url.Orders.Edit(Model.Id)">Edit</a>
+        <a class="btn btn-outline-danger" href="@Url.Orders.Delete(Model.Id)">Delete</a>
+    </div>
+</div>
+
+<div class="mt-3">
+    <dl class="row">
+        <dt class="col-sm-2">Customer</dt>
+        <dd class="col-sm-10">@Model.Customer</dd>
+        <dt class="col-sm-2">Status</dt>
+        <dd class="col-sm-10">@Model.Status</dd>
+        <dt class="col-sm-2">Total</dt>
+        <dd class="col-sm-10">@Model.Total.ToString("C")</dd>
+        <dt class="col-sm-2">Created</dt>
+        <dd class="col-sm-10">@Model.CreatedUtc.ToString("u")</dd>
+    </dl>
+</div>
+
+<div class="mt-4">
+    <h2>More Links</h2>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-primary" href="@Url.Orders.Index()">All orders</a>
+        <a class="btn btn-sm btn-outline-primary" href='@Url.Orders.ByStatus(Model.Status)'>Same status</a>
+        <a class="btn btn-sm btn-outline-primary" href='@Url.Orders.ByCustomer(Model.Customer)'>Same customer</a>
+        <a class="btn btn-sm btn-outline-primary" href='@Url.Orders.Search(Model.Id.ToString())'>Search this id</a>
+        <a class="btn btn-sm btn-outline-primary" href='@Url.Orders.Export("csv")'>Export CSV</a>
+        <a class="btn btn-sm btn-outline-primary" href='@Url.Orders.Export("json")'>Export JSON</a>
+        <a class="btn btn-sm btn-outline-primary" href="@Url.Orders.Clone(Model.Id)">Clone</a>
+    </div>
+</div>

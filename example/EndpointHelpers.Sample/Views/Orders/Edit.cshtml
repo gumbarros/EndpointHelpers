@@ -1,0 +1,41 @@
+@model OrderEditModel
+
+@{
+    var orderId = (int)(ViewData["OrderId"] ?? 0);
+    ViewData["Title"] = $"Edit Order {orderId}";
+}
+
+<h1>Edit Order @orderId</h1>
+
+<form method="post" action="@Url.Orders.Edit(orderId)">
+    @Html.AntiForgeryToken()
+    <div class="mb-3">
+        <label class="form-label" asp-for="Customer"></label>
+        <input class="form-control" asp-for="Customer"/>
+        <span class="text-danger" asp-validation-for="Customer"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="Status"></label>
+        <select class="form-select" asp-for="Status">
+            <option>Open</option>
+            <option>Processing</option>
+            <option>Shipped</option>
+            <option>Cancelled</option>
+            <option>Draft</option>
+        </select>
+        <span class="text-danger" asp-validation-for="Status"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="Total"></label>
+        <input class="form-control" asp-for="Total"/>
+        <span class="text-danger" asp-validation-for="Total"></span>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Save</button>
+        <a class="btn btn-outline-secondary" href='@Url.Orders.Details(orderId, "edit")'>Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}

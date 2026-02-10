@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".github\workflows\build.yml" />
+    <File Path=".github\workflows\publish-nuget.yml" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="example\EndpointHelpers.Sample\EndpointHelpers.Sample.csproj" />
+  <Project Path="src\EndpointHelpers\EndpointHelpers.csproj" />
+  <Project Path="test\EndpointHelpers.Tests\EndpointHelpers.Tests.csproj" />
+</Solution>

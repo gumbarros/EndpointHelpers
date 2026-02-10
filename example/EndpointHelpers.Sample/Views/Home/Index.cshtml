@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="text-center">
+    <h1 class="display-4">EndpointHelpers Sample</h1>
+    <p>Use the generated URL helpers to navigate the in-memory Orders CRUD.</p>
+</div>
+
+<div class="mt-4">
+    <h2>Quick Links</h2>
+    <ul>
+        <li><a href="@Url.Orders.Index()">All orders</a></li>
+        <li><a href="@Url.Orders.Create()">Create order</a></li>
+        <li><a href="@Url.Orders.Recent(3)">Recent (3 days)</a></li>
+        <li><a href="@Url.Orders.ByStatus("Open")">Open orders</a></li>
+        <li><a href="@Url.Orders.ByCustomer("Contoso")">Contoso orders</a></li>
+        <li><a href="@Url.Orders.Export("csv")">Export CSV</a></li>
+    </ul>
+</div>

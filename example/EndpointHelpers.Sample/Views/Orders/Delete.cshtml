@@ -1,0 +1,28 @@
+@model Order
+
+@{
+    ViewData["Title"] = $"Delete Order {Model.Id}";
+}
+
+<h1>Delete Order @Model.Id</h1>
+
+<div class="alert alert-warning">
+    This will remove the order from the in-memory store.
+</div>
+
+<dl class="row">
+    <dt class="col-sm-2">Customer</dt>
+    <dd class="col-sm-10">@Model.Customer</dd>
+    <dt class="col-sm-2">Status</dt>
+    <dd class="col-sm-10">@Model.Status</dd>
+    <dt class="col-sm-2">Total</dt>
+    <dd class="col-sm-10">@Model.Total.ToString("C")</dd>
+</dl>
+
+<form method="post" action="@Url.Orders.DeleteConfirmed(Model.Id)">
+    @Html.AntiForgeryToken()
+    <div class="d-flex gap-2">
+        <button class="btn btn-danger" type="submit">Delete</button>
+        <a class="btn btn-outline-secondary" href='@Url.Orders.Details(Model.Id, "delete")'>Cancel</a>
+    </div>
+</form>
