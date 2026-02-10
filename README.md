@@ -108,4 +108,4 @@ See `example/EndpointHelpers.Sample` for a minimal MVC app using both generators
 
 ## License
 
-MIT
+GNU General Public License
