@@ -21,8 +21,8 @@ jobs:
       - name: Restore
         run: dotnet restore src/EndpointHelpers/EndpointHelpers.csproj
 
-      - name: Pack
-        run: dotnet pack src/EndpointHelpers/EndpointHelpers.csproj -c Release -o ./artifacts -p:ContinuousIntegrationBuild=true
+      - name: Build
+        run: dotnet build src/EndpointHelpers/EndpointHelpers.csproj -c Release -o ./artifacts -p:ContinuousIntegrationBuild=true
 
       - name: Publish
         run: dotnet nuget push "./artifacts/*.nupkg" -k "${{ secrets.NUGET_API_KEY }}" -s "https://api.nuget.org/v3/index.json" --skip-duplicate
