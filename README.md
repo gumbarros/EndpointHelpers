@@ -32,11 +32,11 @@ View order
 
 ## Install
 
-Add the NuGet package as an analyzer reference:
+Add the NuGet package:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="EndpointHelpers" Version="1.0.0" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  <PackageReference Include="EndpointHelpers" Version="1.0.1"/>
 </ItemGroup>
 ```
 
