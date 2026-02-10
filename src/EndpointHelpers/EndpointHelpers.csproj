@@ -2,14 +2,33 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <IsPackable>false</IsPackable>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
 
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IsRoslynComponent>true</IsRoslynComponent>
         <PackageId>EndpointHelpers</PackageId>
+
+        <Title>EndpointHelpers</Title>
+        <Authors>gumbarros</Authors>
+        <Company>gumbarros</Company>
+        <Description>Source generators that add strongly-typed UrlHelper and LinkGenerator APIs for ASP.NET Core MVC controllers.</Description>
+        <PackageDescription>Source generators that add strongly-typed UrlHelper and LinkGenerator APIs for ASP.NET Core MVC controllers.</PackageDescription>
+        <PackageTags>aspnetcore; mvc; urlhelper; linkgenerator; sourcegenerator; roslyn</PackageTags>
+        <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        
+        <Version>1.0.0</Version>
+        <PackageVersion>$(Version)</PackageVersion>
+        <AssemblyVersion>$(Version)</AssemblyVersion>
+        <FileVersion>$(Version)</FileVersion>
+
+        <Copyright>Copyright © gumbarros 2026</Copyright>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">

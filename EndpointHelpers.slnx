@@ -2,6 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path=".github\workflows\build.yml" />
     <File Path=".github\workflows\publish-nuget.yml" />
+    <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>
   <Project Path="example\EndpointHelpers.Sample\EndpointHelpers.Sample.csproj" />
