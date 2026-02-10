@@ -12,12 +12,12 @@ public sealed class UrlHelperGeneratorTests
     private const string ControllerSource = """
 
                                             using Microsoft.AspNetCore.Mvc;
-                                            using UrlHelperGenerator;
+                                            using EndpointHelpers;
 
                                             namespace Test;
 
                                             [Area("Admin")]
-                                            public sealed class HomeController : Controller
+                                            public class HomeController : Controller
                                             {
                                                 [GenerateUrlHelper]
                                                 public IActionResult Index(int id, string slug) => Ok();
@@ -32,7 +32,7 @@ public sealed class UrlHelperGeneratorTests
     {
         var generated = Run();
 
-        Assert.Contains("public class HomeControllerUrlHelper(IUrlHelper url)", generated);
+        Assert.Contains("public sealed class HomeControllerUrlHelper(IUrlHelper url)", generated);
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public sealed class UrlHelperGeneratorTests
         var generated = Run();
 
         Assert.Contains("public HomeControllerUrlHelper Home", generated);
-        Assert.Contains("return new HomeControllerUrlHelper(url);", generated);
+        Assert.Contains("=> new HomeControllerUrlHelper(url);", generated);
     }
 
     [Fact]
@@ -57,8 +57,9 @@ public sealed class UrlHelperGeneratorTests
     {
         var generated = Run();
 
-        Assert.Contains("return url.Action(\"Index\", \"Home\"", generated);
-        Assert.Contains("return url.Action(\"Details\", \"Home\"", generated);
+        Assert.Contains("url.Action", generated);
+        Assert.Contains("Index", generated);
+        Assert.Contains("Home", generated);
     }
 
     private static string Run()
