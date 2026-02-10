@@ -12,7 +12,7 @@ public class HomeController : Controller
         return View();
     }
 
-    public IActionResult Privacy(int id, string aopba)
+    public IActionResult Privacy()
     {
         return View();
     }
