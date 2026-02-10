@@ -23,7 +23,7 @@
         <RepositoryType>git</RepositoryType>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         
-        <Version>1.0.2</Version>
+        <Version>1.0.3</Version>
         <PackageVersion>$(Version)</PackageVersion>
         <AssemblyVersion>$(Version)</AssemblyVersion>
         <FileVersion>$(Version)</FileVersion>
@@ -41,12 +41,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.3.0"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
     </ItemGroup>
 
 </Project>

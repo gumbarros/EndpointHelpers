@@ -14,6 +14,10 @@ public sealed class UrlHelperGenerator : IIncrementalGenerator
     private const string Namespace = "EndpointHelpers";
     private const string GenerateAttributeName = "GenerateUrlHelperAttribute";
     private const string IgnoreAttributeName = "UrlHelperIgnoreAttribute";
+    private const string LinkGenerateAttributeName = "GenerateLinkGeneratorAttribute";
+    private const string LinkIgnoreAttributeName = "LinkGeneratorIgnoreAttribute";
+    private const string RedirectGenerateAttributeName = "GenerateRedirectToActionAttribute";
+    private const string RedirectIgnoreAttributeName = "RedirectToActionIgnoreAttribute";
     private const string UnifiedGenerateAttributeName = "GenerateEndpointHelpersAttribute";
     private const string NonActionAttributeName = "Microsoft.AspNetCore.Mvc.NonActionAttribute";
 
@@ -23,78 +27,96 @@ public sealed class UrlHelperGenerator : IIncrementalGenerator
 
                                                  namespace {Namespace};
                                                  
-                                                 [System.AttributeUsage(
-                                                     System.AttributeTargets.Method |
-                                                     System.AttributeTargets.Class |
-                                                     System.AttributeTargets.Assembly)]
-                                                 public sealed class {GenerateAttributeName} : System.Attribute;
+                                                 [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
+                                                 [global::System.AttributeUsage(
+                                                     global::System.AttributeTargets.Method |
+                                                     global::System.AttributeTargets.Class |
+                                                     global::System.AttributeTargets.Assembly)]
+                                                 internal sealed class {GenerateAttributeName} : global::System.Attribute;
 
-                                                 [System.AttributeUsage(System.AttributeTargets.Method)]
-                                                 public sealed class {IgnoreAttributeName} : System.Attribute;
+                                                 [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
+                                                 [global::System.AttributeUsage(global::System.AttributeTargets.Method)]
+                                                 internal sealed class {IgnoreAttributeName} : global::System.Attribute;
 
-                                                 [System.AttributeUsage(
-                                                     System.AttributeTargets.Method |
-                                                     System.AttributeTargets.Class |
-                                                     System.AttributeTargets.Assembly)]
-                                                 public sealed class {UnifiedGenerateAttributeName} : System.Attribute;
+                                                 [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
+                                                 [global::System.AttributeUsage(
+                                                     global::System.AttributeTargets.Method |
+                                                     global::System.AttributeTargets.Class |
+                                                     global::System.AttributeTargets.Assembly)]
+                                                 internal sealed class {LinkGenerateAttributeName} : global::System.Attribute;
+
+                                                 [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
+                                                 [global::System.AttributeUsage(global::System.AttributeTargets.Method)]
+                                                 internal sealed class {LinkIgnoreAttributeName} : global::System.Attribute;
+
+                                                 [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
+                                                 [global::System.AttributeUsage(
+                                                     global::System.AttributeTargets.Method |
+                                                     global::System.AttributeTargets.Class |
+                                                     global::System.AttributeTargets.Assembly)]
+                                                 internal sealed class {RedirectGenerateAttributeName} : global::System.Attribute;
+
+                                                 [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
+                                                 [global::System.AttributeUsage(global::System.AttributeTargets.Method)]
+                                                 internal sealed class {RedirectIgnoreAttributeName} : global::System.Attribute;
+
+                                                 [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
+                                                 [global::System.AttributeUsage(
+                                                     global::System.AttributeTargets.Method |
+                                                     global::System.AttributeTargets.Class |
+                                                     global::System.AttributeTargets.Assembly)]
+                                                 internal sealed class {UnifiedGenerateAttributeName} : global::System.Attribute;
                                                  
                                                  """;
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(ctx =>
+        {
+            ctx.AddEmbeddedAttributeDefinition();
             ctx.AddSource(
                 "Attributes.g.cs",
-                SourceText.From(AttributeSourceCode, Encoding.UTF8)));
+                SourceText.From(AttributeSourceCode, Encoding.UTF8));
+        });
 
-        var provider = context.SyntaxProvider
-            .CreateSyntaxProvider(
-                static (s, _) => s is ClassDeclarationSyntax or MethodDeclarationSyntax,
-                static (ctx, _) => GetTarget(ctx))
+        var generateTargets = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                $"{Namespace}.{GenerateAttributeName}",
+                static (node, _) => node is ClassDeclarationSyntax or MethodDeclarationSyntax,
+                static (ctx, _) => GetControllerMetadataName(ctx.TargetSymbol))
             .Where(static t => t is not null);
 
+        var unifiedTargets = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                $"{Namespace}.{UnifiedGenerateAttributeName}",
+                static (node, _) => node is ClassDeclarationSyntax or MethodDeclarationSyntax,
+                static (ctx, _) => GetControllerMetadataName(ctx.TargetSymbol))
+            .Where(static t => t is not null);
+
+        var targets = generateTargets
+            .Collect()
+            .Combine(unifiedTargets.Collect())
+            .Select(static (x, _) => x.Left.AddRange(x.Right));
+
         context.RegisterSourceOutput(
-            context.CompilationProvider.Combine(provider.Collect()),
+            context.CompilationProvider.Combine(targets),
             static (ctx, t) => Generate(ctx, t.Left, t.Right!));
     }
 
-    private static MemberDeclarationSyntax? GetTarget(GeneratorSyntaxContext context)
+    private static string? GetControllerMetadataName(ISymbol symbol)
     {
-        if (context.Node is ClassDeclarationSyntax cls)
+        return symbol switch
         {
-            foreach (var list in cls.AttributeLists)
-            foreach (var attr in list.Attributes)
-            {
-                if (context.SemanticModel.GetSymbolInfo(attr).Symbol is IMethodSymbol symbol &&
-                    (symbol.ContainingType.ToDisplayString() ==
-                     $"{Namespace}.{GenerateAttributeName}" ||
-                     symbol.ContainingType.ToDisplayString() ==
-                     $"{Namespace}.{UnifiedGenerateAttributeName}"))
-                    return cls;
-            }
-        }
-
-        if (context.Node is MethodDeclarationSyntax method)
-        {
-            foreach (var list in method.AttributeLists)
-            foreach (var attr in list.Attributes)
-            {
-                if (context.SemanticModel.GetSymbolInfo(attr).Symbol is IMethodSymbol symbol &&
-                    (symbol.ContainingType.ToDisplayString() ==
-                     $"{Namespace}.{GenerateAttributeName}" ||
-                     symbol.ContainingType.ToDisplayString() ==
-                     $"{Namespace}.{UnifiedGenerateAttributeName}"))
-                    return method;
-            }
-        }
-
-        return null;
+            INamedTypeSymbol type => GetMetadataName(type),
+            IMethodSymbol method => method.ContainingType is null ? null : GetMetadataName(method.ContainingType),
+            _ => null
+        };
     }
 
     private static void Generate(
         SourceProductionContext context,
         Compilation compilation,
-        ImmutableArray<MemberDeclarationSyntax> members)
+        ImmutableArray<string?> members)
     {
         var assemblyHasGenerate = compilation.Assembly.GetAttributes()
             .Any(a => a.AttributeClass?.ToDisplayString() ==
@@ -118,18 +140,8 @@ public sealed class UrlHelperGenerator : IIncrementalGenerator
                 return;
 
             controllers = members
-                .Select(m =>
-                {
-                    if (m is ClassDeclarationSyntax cls)
-                        return compilation.GetSemanticModel(cls.SyntaxTree)
-                            .GetDeclaredSymbol(cls) as INamedTypeSymbol;
-
-                    if (m is MethodDeclarationSyntax method)
-                        return (compilation.GetSemanticModel(method.SyntaxTree)
-                            .GetDeclaredSymbol(method) as IMethodSymbol)?.ContainingType;
-
-                    return null;
-                })
+                .Distinct()
+                .Select(name => compilation.GetTypeByMetadataName(name!))
                 .Where(s => s is not null)
                 .Distinct(SymbolEqualityComparer.Default)
                 .Cast<INamedTypeSymbol>()
@@ -257,5 +269,20 @@ public sealed class UrlHelperGenerator : IIncrementalGenerator
         foreach (var nested in ns.GetNamespaceMembers())
         foreach (var type in GetAllTypes(nested))
             yield return type;
+    }
+
+    private static string GetMetadataName(INamedTypeSymbol type)
+    {
+        var name = type.MetadataName;
+        var current = type.ContainingType;
+
+        while (current is not null)
+        {
+            name = $"{current.MetadataName}+{name}";
+            current = current.ContainingType;
+        }
+
+        var ns = type.ContainingNamespace?.ToDisplayString();
+        return string.IsNullOrEmpty(ns) ? name : $"{ns}.{name}";
     }
 }
