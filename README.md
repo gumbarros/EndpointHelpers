@@ -97,15 +97,34 @@ You can exclude methods using:
 - Controllers are discovered by name: non-abstract classes ending with `Controller`.
 - Only public, ordinary methods are included.
 - Generated helpers are placed in the `EndpointHelpers` namespace.
-- Helper class names:
-  - `HomeControllerUrlHelper`
-  - `HomeControllerLinkGenerator`
 - Extension properties use the controller name without the `Controller` suffix.
+
+### Controller and action discovery
+```csharp
+[GenerateUrlHelper]
+[GenerateLinkGenerator]
+public class OrdersController : Controller
+{
+    public IActionResult Index() => View();
+    
+    public IActionResult Details(int orderId, string? source) => View();
+}
+```
+
+
+Generated surface
+```csharp
+Url.Orders.Index();
+Url.Orders.Details(orderId: 123, source: "dashboard");
+LinkGenerator.Orders.GetDetailsPath(123, "dashboard");
+LinkGenerator.Orders.GetIndexPath();
+LinkGenerator.Orders.GetDetailsPath(httpContext, 123, "dashboard");
+```
 
 ## Example Project
 
-See `example/EndpointHelpers.Sample` for a minimal MVC app using both generators.
+See [`example/EndpointHelpers.Sample`](https://github.com/gumbarros/EndpointHelpers/tree/master/example/EndpointHelpers.Sample) for a minimal MVC app using both generators.
 
 ## License
 
-MIT
+GNU General Public License

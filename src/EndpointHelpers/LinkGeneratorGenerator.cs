@@ -173,7 +173,14 @@ public sealed class LinkGeneratorGenerator : IIncrementalGenerator
                 var parameters = string.Join(
                     ", ",
                     method.Parameters.Select(p =>
-                        $"{p.Type.ToDisplayString()} {p.Name}"));
+                        $"{p.Type.ToDisplayString()} {p.Name}" +
+                        (p.IsOptional
+                            ? $" = {(p.ExplicitDefaultValue == null
+                                ? "null"
+                                : p.Type.SpecialType == SpecialType.System_String
+                                    ? $"\"{p.ExplicitDefaultValue}\""
+                                    : p.ExplicitDefaultValue.ToString())}"
+                            : string.Empty)));
 
                 sb.AppendLine($"    public string {actionMethodName}({parameters})");
                 sb.AppendLine("    {");
