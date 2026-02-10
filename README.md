@@ -157,7 +157,7 @@ this.RedirectToDetails(orderId: 123, source: "dashboard");
 
 ## Example Project
 
-See [`example/EndpointHelpers.Sample`](https://github.com/gumbarros/EndpointHelpers/tree/master/example/EndpointHelpers.Sample) for a minimal MVC app using both generators.
+See [`example/EndpointHelpers.Sample`](https://github.com/gumbarros/EndpointHelpers/tree/master/example/EndpointHelpers.Sample) for a minimal MVC app using all generators.
 
 ## License
 
