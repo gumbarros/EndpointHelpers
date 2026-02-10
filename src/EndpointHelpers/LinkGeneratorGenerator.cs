@@ -15,6 +15,7 @@ public sealed class LinkGeneratorGenerator : IIncrementalGenerator
     private const string Namespace = "EndpointHelpers";
     private const string GenerateAttributeName = "GenerateLinkGeneratorAttribute";
     private const string IgnoreAttributeName = "LinkGeneratorIgnoreAttribute";
+    private const string UnifiedGenerateAttributeName = "GenerateEndpointHelpersAttribute";
     private const string NonActionAttributeName = "Microsoft.AspNetCore.Mvc.NonActionAttribute";
 
     //lang=cs
@@ -59,8 +60,10 @@ public sealed class LinkGeneratorGenerator : IIncrementalGenerator
             foreach (var attr in list.Attributes)
             {
                 if (context.SemanticModel.GetSymbolInfo(attr).Symbol is IMethodSymbol symbol &&
-                    symbol.ContainingType.ToDisplayString() ==
-                    $"{Namespace}.{GenerateAttributeName}")
+                    (symbol.ContainingType.ToDisplayString() ==
+                     $"{Namespace}.{GenerateAttributeName}" ||
+                     symbol.ContainingType.ToDisplayString() ==
+                     $"{Namespace}.{UnifiedGenerateAttributeName}"))
                     return cls;
             }
         }
@@ -71,8 +74,10 @@ public sealed class LinkGeneratorGenerator : IIncrementalGenerator
             foreach (var attr in list.Attributes)
             {
                 if (context.SemanticModel.GetSymbolInfo(attr).Symbol is IMethodSymbol symbol &&
-                    symbol.ContainingType.ToDisplayString() ==
-                    $"{Namespace}.{GenerateAttributeName}")
+                    (symbol.ContainingType.ToDisplayString() ==
+                     $"{Namespace}.{GenerateAttributeName}" ||
+                     symbol.ContainingType.ToDisplayString() ==
+                     $"{Namespace}.{UnifiedGenerateAttributeName}"))
                     return method;
             }
         }
@@ -87,7 +92,9 @@ public sealed class LinkGeneratorGenerator : IIncrementalGenerator
     {
         var assemblyHasGenerate = compilation.Assembly.GetAttributes()
             .Any(a => a.AttributeClass?.ToDisplayString() ==
-                      $"{Namespace}.{GenerateAttributeName}");
+                      $"{Namespace}.{GenerateAttributeName}" ||
+                      a.AttributeClass?.ToDisplayString() ==
+                      $"{Namespace}.{UnifiedGenerateAttributeName}");
 
         INamedTypeSymbol[] controllers;
 
@@ -140,7 +147,9 @@ public sealed class LinkGeneratorGenerator : IIncrementalGenerator
             var generateAttr = controller.GetAttributes()
                 .FirstOrDefault(a =>
                     a.AttributeClass?.ToDisplayString() ==
-                    $"{Namespace}.{GenerateAttributeName}");
+                    $"{Namespace}.{GenerateAttributeName}" ||
+                    a.AttributeClass?.ToDisplayString() ==
+                    $"{Namespace}.{UnifiedGenerateAttributeName}");
 
             var controllerName = controller.Name.Replace("Controller", "");
             var helperClassName = $"{controller.Name}LinkGenerator";
@@ -163,7 +172,9 @@ public sealed class LinkGeneratorGenerator : IIncrementalGenerator
                      generateAttr != null ||
                      m.GetAttributes().Any(a =>
                          a.AttributeClass?.ToDisplayString() ==
-                         $"{Namespace}.{GenerateAttributeName}")));
+                         $"{Namespace}.{GenerateAttributeName}" ||
+                         a.AttributeClass?.ToDisplayString() ==
+                         $"{Namespace}.{UnifiedGenerateAttributeName}")));
 
             foreach (var method in methods)
             {
@@ -236,13 +247,7 @@ public sealed class LinkGeneratorGenerator : IIncrementalGenerator
             var helperClassName = $"{controller.Name}LinkGenerator";
             var propertyName = controller.Name.Replace("Controller", "");
 
-            sb.AppendLine($"        public {helperClassName} {propertyName}");
-            sb.AppendLine("        {");
-            sb.AppendLine("            get");
-            sb.AppendLine("            {");
-            sb.AppendLine($"                return new {helperClassName}(linkGenerator);");
-            sb.AppendLine("            }");
-            sb.AppendLine("        }");
+            sb.AppendLine($"        public {helperClassName} {propertyName} => new {helperClassName}(linkGenerator);");
             sb.AppendLine();
         }
 
@@ -264,4 +269,3 @@ public sealed class LinkGeneratorGenerator : IIncrementalGenerator
             yield return type;
     }
 }
-

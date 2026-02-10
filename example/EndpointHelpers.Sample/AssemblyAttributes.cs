@@ -1,4 +1,3 @@
 using EndpointHelpers;
 
-[assembly: GenerateUrlHelper]
-[assembly: GenerateLinkGenerator]
+[assembly: GenerateEndpointHelpers]

@@ -6,9 +6,9 @@ namespace EndpointHelpers.Sample.Controllers;
 
 public sealed class OrdersController : Controller
 {
-    private static readonly List<Order> Orders = new();
+    private static readonly List<Order> Orders = [];
     private static int _nextId = 1000;
-    private static readonly object Gate = new();
+    private static readonly Lock Gate = new();
 
     static OrdersController()
     {
@@ -111,7 +111,7 @@ public sealed class OrdersController : Controller
         order.Status = model.Status;
         order.Total = model.Total;
 
-        return RedirectToAction(nameof(Details), new { orderId, source = "updated" });
+        return this.RedirectToDetails(orderId, "updated");
     }
 
     public IActionResult Delete(int orderId)
@@ -186,7 +186,7 @@ public sealed class OrdersController : Controller
         };
 
         Orders.Add(clone);
-        return RedirectToAction(nameof(Edit), new { orderId = clone.Id });
+        return this.RedirectToEdit(clone.Id);
     }
 
     private static int NextId()
@@ -199,13 +199,12 @@ public sealed class OrdersController : Controller
 
     private static void Seed()
     {
-        Orders.AddRange(new[]
-        {
+        Orders.AddRange([
             new Order { Id = NextId(), Customer = "Northwind", Status = "Open", Total = 120.50m, CreatedUtc = DateTime.UtcNow.AddDays(-1) },
             new Order { Id = NextId(), Customer = "Contoso", Status = "Processing", Total = 845.00m, CreatedUtc = DateTime.UtcNow.AddDays(-2) },
             new Order { Id = NextId(), Customer = "Fabrikam", Status = "Shipped", Total = 310.25m, CreatedUtc = DateTime.UtcNow.AddDays(-4) },
             new Order { Id = NextId(), Customer = "AdventureWorks", Status = "Open", Total = 72.10m, CreatedUtc = DateTime.UtcNow.AddDays(-7) },
-            new Order { Id = NextId(), Customer = "Tailspin", Status = "Cancelled", Total = 19.99m, CreatedUtc = DateTime.UtcNow.AddDays(-12) }
-        });
+            new Order { Id = NextId(), Customer = "Spinella", Status = "Cancelled", Total = 19.99m, CreatedUtc = DateTime.UtcNow.AddDays(-12) }
+        ]);
     }
 }
