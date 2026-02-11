@@ -73,7 +73,7 @@ public sealed class OrdersController : Controller
         };
 
         Orders.Add(order);
-        return RedirectToAction(nameof(Details), new { orderId = order.Id, source = "created" });
+        return this.RedirectToDetails(order.Id, "created" );
     }
 
     public IActionResult Edit(int orderId)
@@ -132,7 +132,8 @@ public sealed class OrdersController : Controller
             return NotFound();
 
         Orders.Remove(order);
-        return RedirectToAction(nameof(Index));
+        
+        return this.RedirectToIndex();
     }
 
     public IActionResult Recent(int days = 7)
@@ -151,17 +152,17 @@ public sealed class OrdersController : Controller
 
     public IActionResult ByStatus(string status)
     {
-        return RedirectToAction(nameof(Index), new { status });
+        return this.RedirectToIndex(status: status);
     }
 
     public IActionResult ByCustomer(string customer)
     {
-        return RedirectToAction(nameof(Index), new { customer });
+        return this.RedirectToIndex(customer: customer);
     }
-
+    
     public IActionResult Search(string q)
     {
-        return RedirectToAction(nameof(Index), new { q });
+        return this.RedirectToIndex(q: q);
     }
 
     public IActionResult Export(string format = "csv")
