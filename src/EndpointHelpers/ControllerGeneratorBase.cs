@@ -72,7 +72,7 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
     private ControllerModel? TransformController(GeneratorSyntaxContext context)
     {
         var classDeclaration = (ClassDeclarationSyntax)context.Node;
-        if (context.SemanticModel.GetDeclaredSymbol(classDeclaration) is not INamedTypeSymbol typeSymbol)
+        if (context.SemanticModel.GetDeclaredSymbol(classDeclaration) is not { } typeSymbol)
             return null;
 
         var classHasGenerateAttribute = HasAnyAttribute(
@@ -93,11 +93,13 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
                     method,
                     $"{EndpointHelpersNamespace}.{GenerateAttributeName}",
                     $"{EndpointHelpersNamespace}.{UnifiedGenerateAttributeName}"),
-                method.Parameters.Select(static parameter => new ParameterModel(
-                    parameter.Type.ToDisplayString(),
-                    parameter.Name,
-                    parameter.IsOptional,
-                    GetOptionalDefaultLiteral(parameter))).ToImmutableArray()))
+                [
+                    ..method.Parameters.Select(static parameter => new ParameterModel(
+                        parameter.Type.ToDisplayString(),
+                        parameter.Name,
+                        parameter.IsOptional,
+                        GetOptionalDefaultLiteral(parameter)))
+                ]))
             .ToImmutableArray();
 
         return new ControllerModel(
@@ -141,20 +143,22 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
             .Select(static group => group.First())
             .ToArray();
 
-        return controllers
-            .Where(controller => assemblyHasGenerate
-                ? controller.Name.EndsWith("Controller", StringComparison.Ordinal)
-                : controller.ClassHasGenerateAttribute || controller.Methods.Any(static method => method.HasGenerateAttribute))
-            .Select(controller => new ControllerModel(
-                controller.MetadataName,
-                controller.TypeName,
-                controller.Name,
-                controller.ClassHasGenerateAttribute,
-                controller.Methods
-                    .Where(method => assemblyHasGenerate || controller.ClassHasGenerateAttribute || method.HasGenerateAttribute)
-                    .ToImmutableArray()))
-            .Where(static controller => controller.Methods.Length > 0)
-            .ToImmutableArray();
+        return [
+            ..controllers
+                .Where(controller => assemblyHasGenerate
+                    ? controller.Name.EndsWith("Controller", StringComparison.Ordinal)
+                    : controller.ClassHasGenerateAttribute || controller.Methods.Any(static method => method.HasGenerateAttribute))
+                .Select(controller => new ControllerModel(
+                    controller.MetadataName,
+                    controller.TypeName,
+                    controller.Name,
+                    controller.ClassHasGenerateAttribute,
+                    [
+                        ..controller.Methods
+                            .Where(method => assemblyHasGenerate || controller.ClassHasGenerateAttribute || method.HasGenerateAttribute)
+                    ]))
+                .Where(static controller => controller.Methods.Length > 0)
+        ];
     }
 
     protected static bool HasAnyAttribute(ISymbol symbol, params string[] fullMetadataNames)
