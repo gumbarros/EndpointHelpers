@@ -13,14 +13,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2c504c9f-27e2-4065-9e4b-647bd2aaeae6" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/EndpointHelpers/ControllerGeneratorBase.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/LinkGeneratorGeneratorTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/RedirectToActionGeneratorTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EndpointHelpers.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/EndpointHelpers.sln.DotSettings.user" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/OrdersController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/OrdersController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/LinkGeneratorGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/LinkGeneratorGenerator.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/RedirectToActionGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/RedirectToActionGenerator.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/UrlHelperGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/UrlHelperGenerator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/ControllerGeneratorBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/ControllerGeneratorBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/EndpointHelpers.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/EndpointHelpers.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/EndpointHelpers.Tests/EndpointHelpers.Tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/EndpointHelpers.Tests.csproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -250,7 +245,7 @@
       <workItem from="1770737647993" duration="5118000" />
       <workItem from="1770743997818" duration="1133000" />
       <workItem from="1770746078345" duration="63000" />
-      <workItem from="1770766851040" duration="1134000" />
+      <workItem from="1770766851040" duration="1793000" />
     </task>
     <task id="LOCAL-00001" summary="Initial Commit">
       <option name="closed" value="true" />
@@ -348,7 +343,23 @@
       <option name="project" value="LOCAL" />
       <updated>1770745093711</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="Apply FAWMN Pattern, fix RedirectToActionGenerator.cs optional parameters and add unit tests for RedirectToActionGenerator.cs and LinkGeneratorGeneratorTests.cs">
+      <option name="closed" value="true" />
+      <created>1770768061074</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1770768061074</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Apply R# suggestions">
+      <option name="closed" value="true" />
+      <created>1770768166265</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1770768166265</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -369,7 +380,9 @@
     <MESSAGE value="Update README.md" />
     <MESSAGE value="Fix unit tests" />
     <MESSAGE value="Refactor source generation and add `AddEmbeddedAttributeDefinition`" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor source generation and add `AddEmbeddedAttributeDefinition`" />
+    <MESSAGE value="Apply FAWMN Pattern, fix RedirectToActionGenerator.cs optional parameters and add unit tests for RedirectToActionGenerator.cs and LinkGeneratorGeneratorTests.cs" />
+    <MESSAGE value="Apply R# suggestions" />
+    <option name="LAST_COMMIT_MESSAGE" value="Apply R# suggestions" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
