@@ -143,25 +143,28 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
             .Select(static group => group.First())
             .ToArray();
 
-        return [
+        return
+        [
             ..controllers
                 .Where(controller => assemblyHasGenerate
                     ? controller.Name.EndsWith("Controller", StringComparison.Ordinal)
-                    : controller.ClassHasGenerateAttribute || controller.Methods.Any(static method => method.HasGenerateAttribute))
-                .Select(controller => new ControllerModel(
-                    controller.MetadataName,
-                    controller.TypeName,
-                    controller.Name,
-                    controller.ClassHasGenerateAttribute,
+                    : controller.ClassHasGenerateAttribute ||
+                      controller.Methods.Any(static method => method.HasGenerateAttribute))
+                .Select(controller => controller with
+                {
+                    Methods =
                     [
                         ..controller.Methods
-                            .Where(method => assemblyHasGenerate || controller.ClassHasGenerateAttribute || method.HasGenerateAttribute)
-                    ]))
+                            .Where(method =>
+                                assemblyHasGenerate || controller.ClassHasGenerateAttribute ||
+                                method.HasGenerateAttribute)
+                    ]
+                })
                 .Where(static controller => controller.Methods.Length > 0)
         ];
     }
 
-    protected static bool HasAnyAttribute(ISymbol symbol, params string[] fullMetadataNames)
+    private static bool HasAnyAttribute(ISymbol symbol, params string[] fullMetadataNames)
     {
         foreach (var attribute in symbol.GetAttributes())
         {
@@ -169,10 +172,9 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
             if (name is null)
                 continue;
 
-            foreach (var metadataName in fullMetadataNames)
+            if (fullMetadataNames.Any(metadataName => name == metadataName))
             {
-                if (name == metadataName)
-                    return true;
+                return true;
             }
         }
 
@@ -215,63 +217,21 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
         return string.IsNullOrEmpty(ns) ? name : $"{ns}.{name}";
     }
 
-    protected sealed class ControllerModel
-    {
-        public ControllerModel(
-            string metadataName,
-            string typeName,
-            string name,
-            bool classHasGenerateAttribute,
-            ImmutableArray<ActionModel> methods)
-        {
-            MetadataName = metadataName;
-            TypeName = typeName;
-            Name = name;
-            ClassHasGenerateAttribute = classHasGenerateAttribute;
-            Methods = methods;
-        }
+    protected sealed record ControllerModel(
+        string MetadataName,
+        string TypeName,
+        string Name,
+        bool ClassHasGenerateAttribute,
+        ImmutableArray<ActionModel> Methods);
 
-        public string MetadataName { get; }
-        public string TypeName { get; }
-        public string Name { get; }
-        public bool ClassHasGenerateAttribute { get; }
-        public ImmutableArray<ActionModel> Methods { get; }
-    }
+    protected sealed record ActionModel(
+        string Name,
+        bool HasGenerateAttribute,
+        ImmutableArray<ParameterModel> Parameters);
 
-    protected sealed class ActionModel
-    {
-        public ActionModel(
-            string name,
-            bool hasGenerateAttribute,
-            ImmutableArray<ParameterModel> parameters)
-        {
-            Name = name;
-            HasGenerateAttribute = hasGenerateAttribute;
-            Parameters = parameters;
-        }
-
-        public string Name { get; }
-        public bool HasGenerateAttribute { get; }
-        public ImmutableArray<ParameterModel> Parameters { get; }
-    }
-
-    protected sealed class ParameterModel
-    {
-        public ParameterModel(
-            string typeName,
-            string name,
-            bool isOptional,
-            string defaultValueLiteral)
-        {
-            TypeName = typeName;
-            Name = name;
-            IsOptional = isOptional;
-            DefaultValueLiteral = defaultValueLiteral;
-        }
-
-        public string TypeName { get; }
-        public string Name { get; }
-        public bool IsOptional { get; }
-        public string DefaultValueLiteral { get; }
-    }
+    protected sealed record ParameterModel(
+        string TypeName,
+        string Name,
+        bool IsOptional,
+        string DefaultValueLiteral);
 }
