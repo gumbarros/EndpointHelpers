@@ -155,13 +155,12 @@ Url.Orders.Details(orderId: 123, source: "dashboard");
 
 // LinkGeneratorGenerator
 
-LinkGenerator.Orders.GetDetailsPath(123, "dashboard");
 LinkGenerator.Orders.GetIndexPath();
-
+LinkGenerator.Orders.GetDetailsPath(123, "dashboard");
 
 // RedirectToActionGenerator
 
-this.RedirectToIndex()
+this.RedirectToIndex();
 this.RedirectToDetails(orderId: 123, source: "dashboard");
 ```
 
