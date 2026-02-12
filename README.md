@@ -145,13 +145,22 @@ public class OrdersController : Controller
 ```
 
 
-Generated surface
+#### Generated surface
+
 ```csharp
+// UrlHelperGenerator
+
 Url.Orders.Index();
 Url.Orders.Details(orderId: 123, source: "dashboard");
-LinkGenerator.Orders.GetDetailsPath(123, "dashboard");
+
+// LinkGeneratorGenerator
+
 LinkGenerator.Orders.GetIndexPath();
-LinkGenerator.Orders.GetDetailsPath(httpContext, 123, "dashboard");
+LinkGenerator.Orders.GetDetailsPath(123, "dashboard");
+
+// RedirectToActionGenerator
+
+this.RedirectToIndex();
 this.RedirectToDetails(orderId: 123, source: "dashboard");
 ```
 
