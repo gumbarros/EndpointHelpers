@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,7 @@ public sealed class RedirectToActionGenerator : ControllerGeneratorBase
     protected override string IgnoreAttributeName => "RedirectToActionIgnoreAttribute";
     protected override string OutputFileName => "RedirectToActionExtensions.g.cs";
 
-    protected override string BuildSource(ImmutableArray<ControllerModel> selectedControllers)
+    protected override string BuildSource(IReadOnlyList<ControllerModel> selectedControllers)
     {
         var sb = new StringBuilder();
 

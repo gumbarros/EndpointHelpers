@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -79,7 +79,7 @@ public sealed class UrlHelperGenerator : ControllerGeneratorBase
         });
     }
 
-    protected override string BuildSource(ImmutableArray<ControllerModel> selectedControllers)
+    protected override string BuildSource(IReadOnlyList<ControllerModel> selectedControllers)
     {
         var sb = new StringBuilder();
 

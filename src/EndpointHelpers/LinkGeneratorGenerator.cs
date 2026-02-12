@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,7 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
     protected override string IgnoreAttributeName => "LinkGeneratorIgnoreAttribute";
     protected override string OutputFileName => "LinkGeneratorExtensions.g.cs";
 
-    protected override string BuildSource(ImmutableArray<ControllerModel> selectedControllers)
+    protected override string BuildSource(IReadOnlyList<ControllerModel> selectedControllers)
     {
         var sb = new StringBuilder();
 

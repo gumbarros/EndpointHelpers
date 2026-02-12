@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -49,7 +49,7 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
     {
     }
 
-    protected abstract string BuildSource(ImmutableArray<ControllerModel> selectedControllers);
+    protected abstract string BuildSource(IReadOnlyList<ControllerModel> selectedControllers);
 
     private static bool IsAssemblyAttributeCandidate(AttributeSyntax attribute)
     {
@@ -94,11 +94,13 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
                     $"{EndpointHelpersNamespace}.{GenerateAttributeName}",
                     $"{EndpointHelpersNamespace}.{UnifiedGenerateAttributeName}"),
                 [
-                    ..method.Parameters.Select(static parameter => new ParameterModel(
-                        parameter.Type.ToDisplayString(),
-                        parameter.Name,
-                        parameter.IsOptional,
-                        GetOptionalDefaultLiteral(parameter)))
+                    ..method.Parameters
+                        .Where(static parameter => !IsIgnoredParameter(parameter))
+                        .Select(static parameter => new ParameterModel(
+                            parameter.Type.ToDisplayString(),
+                            parameter.Name,
+                            parameter.IsOptional,
+                            GetOptionalDefaultLiteral(parameter)))
                 ]))
             .ToImmutableArray();
 
@@ -110,31 +112,22 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
             methods);
     }
 
-    private static void Generate(
+    private void Generate(
         SourceProductionContext context,
-        ImmutableArray<ControllerModel> rawControllers,
-        bool assemblyHasGenerate,
-        ControllerGeneratorBase generator)
+        IReadOnlyList<ControllerModel> rawControllers,
+        bool assemblyHasGenerate)
     {
         var selectedControllers = SelectControllers(rawControllers, assemblyHasGenerate);
         if (selectedControllers.Length == 0)
             return;
 
         context.AddSource(
-            generator.OutputFileName,
-            SourceText.From(generator.BuildSource(selectedControllers), Encoding.UTF8));
-    }
-
-    private void Generate(
-        SourceProductionContext context,
-        ImmutableArray<ControllerModel> rawControllers,
-        bool assemblyHasGenerate)
-    {
-        Generate(context, rawControllers, assemblyHasGenerate, this);
+            OutputFileName,
+            SourceText.From(BuildSource(selectedControllers), Encoding.UTF8));
     }
 
     private static ImmutableArray<ControllerModel> SelectControllers(
-        ImmutableArray<ControllerModel> rawControllers,
+        IReadOnlyList<ControllerModel> rawControllers,
         bool assemblyHasGenerate)
     {
         var controllers = rawControllers
@@ -181,25 +174,49 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
         return false;
     }
 
-    private static string GetOptionalDefaultLiteral(IParameterSymbol parameter)
+    private static string? GetOptionalDefaultLiteral(IParameterSymbol parameter)
     {
         if (!parameter.IsOptional)
             return string.Empty;
 
-        if (!parameter.HasExplicitDefaultValue || parameter.ExplicitDefaultValue is null)
-            return "null";
+        if (!parameter.HasExplicitDefaultValue)
+            return parameter.Type.IsValueType ? "default" : "null";
 
         var value = parameter.ExplicitDefaultValue;
-        return value switch
+
+        if (value is null)
+            return "null";
+
+        if (parameter.Type.TypeKind == TypeKind.Enum)
         {
-            string s => SymbolDisplay.FormatLiteral(s, quote: true),
-            char c => SymbolDisplay.FormatLiteral(c, quote: true),
-            bool b => b ? "true" : "false",
-            float f => f.ToString("R", CultureInfo.InvariantCulture) + "F",
-            double d => d.ToString("R", CultureInfo.InvariantCulture),
-            decimal m => m.ToString(CultureInfo.InvariantCulture) + "M",
-            _ => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "null"
-        };
+            var enumType = (INamedTypeSymbol)parameter.Type;
+
+            foreach (var member in enumType.GetMembers().OfType<IFieldSymbol>())
+            {
+                if (!member.HasConstantValue)
+                    continue;
+
+                if (Equals(member.ConstantValue, value))
+                    return $"{enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{member.Name}";
+            }
+
+            var underlying = SymbolDisplay.FormatPrimitive(value, quoteStrings: true, useHexadecimalNumbers: true);
+            return $"({enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){underlying}";
+        }
+
+        return SymbolDisplay.FormatPrimitive(value, quoteStrings: true, useHexadecimalNumbers: true);
+    }
+
+
+    private static bool IsIgnoredParameter(IParameterSymbol parameter)
+    {
+        if (parameter.Type is INamedTypeSymbol { Name: "CancellationToken" } namedType &&
+            namedType.ContainingNamespace?.ToDisplayString() == "System.Threading")
+        {
+            return true;
+        }
+
+        return HasAnyAttribute(parameter, "Microsoft.AspNetCore.Mvc.FromServicesAttribute");
     }
 
     private static string GetMetadataName(INamedTypeSymbol type)
@@ -233,5 +250,5 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
         string TypeName,
         string Name,
         bool IsOptional,
-        string DefaultValueLiteral);
+        string? DefaultValueLiteral);
 }
