@@ -147,7 +147,7 @@ public sealed class UrlHelperGeneratorTests
         Assert.Contains("url.Action", generated);
         Assert.Contains("Index", generated);
         Assert.Contains("Home", generated);
-        Assert.Contains("{ \"area\", \"Admin\" }", generated);
+        Assert.Contains("{ \"Area\", \"Admin\" }", generated);
     }
 
     [Fact]
