@@ -1,10 +1,12 @@
 using System.Globalization;
+using EndpointHelpers;
 using EndpointHelpers.Sample.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EndpointHelpers.Sample.Controllers;
 
-public sealed class OrdersController : Controller
+[GenerateRedirectToAction]
+public sealed partial class OrdersController : Controller
 {
     private static readonly List<Order> Orders = [];
     private static int _nextId = 1000;
@@ -73,7 +75,7 @@ public sealed class OrdersController : Controller
         };
 
         Orders.Add(order);
-        return this.RedirectToDetails(order.Id, "created" );
+        return RedirectToDetails(order.Id, "created" );
     }
 
     public IActionResult Edit(int orderId)
@@ -111,7 +113,7 @@ public sealed class OrdersController : Controller
         order.Status = model.Status;
         order.Total = model.Total;
 
-        return this.RedirectToDetails(orderId, "updated");
+        return RedirectToDetails(orderId, "updated");
     }
 
     public IActionResult Delete(int orderId)
@@ -133,7 +135,7 @@ public sealed class OrdersController : Controller
 
         Orders.Remove(order);
         
-        return this.RedirectToIndex();
+        return RedirectToIndex();
     }
 
     public IActionResult Recent(int days = 7)
@@ -152,17 +154,17 @@ public sealed class OrdersController : Controller
 
     public IActionResult ByStatus(string status)
     {
-        return this.RedirectToIndex(status: status);
+        return RedirectToIndex(status: status);
     }
 
     public IActionResult ByCustomer(string customer)
     {
-        return this.RedirectToIndex(customer: customer);
+        return RedirectToIndex(customer: customer);
     }
     
     public IActionResult Search(string q)
     {
-        return this.RedirectToIndex(q: q);
+        return RedirectToIndex(q: q);
     }
 
     public IActionResult Export(string format = "csv")
@@ -187,7 +189,7 @@ public sealed class OrdersController : Controller
         };
 
         Orders.Add(clone);
-        return this.RedirectToEdit(clone.Id);
+        return RedirectToEdit(clone.Id);
     }
 
     private static int NextId()

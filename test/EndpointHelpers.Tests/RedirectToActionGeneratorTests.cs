@@ -22,7 +22,7 @@ public sealed class RedirectToActionGeneratorTests
                                             {
                                                 using EndpointHelpers;
 
-                                                public class HomeController : Controller
+                                                public partial class HomeController : Controller
                                                 {
                                                     [GenerateRedirectToAction]
                                                     public IActionResult Index(int id, string slug) => Ok();
@@ -34,11 +34,11 @@ public sealed class RedirectToActionGeneratorTests
                                             """;
 
     [Fact]
-    public void Generates_Controller_Extension_Block()
+    public void Generates_Partial_Controller_Block()
     {
         var generated = Run();
 
-        Assert.Contains("extension(Test.HomeController controller)", generated);
+        Assert.Contains("public partial class HomeController", generated);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public sealed class RedirectToActionGeneratorTests
     {
         var generated = Run();
 
-        Assert.Contains("return controller.RedirectToAction(", generated);
+        Assert.Contains("return RedirectToAction(", generated);
         Assert.Contains("\"Index\",", generated);
         Assert.Contains("\"Home\",", generated);
     }
@@ -87,7 +87,7 @@ public sealed class RedirectToActionGeneratorTests
         var result = driver.RunGenerators(compilation).GetRunResult();
 
         return result.GeneratedTrees
-            .Single(tree => tree.FilePath.EndsWith("RedirectToActionExtensions.g.cs"))
+            .Single(tree => tree.FilePath.EndsWith("RedirectToActionControllers.g.cs"))
             .GetText()
             .ToString();
     }

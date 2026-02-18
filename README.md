@@ -52,15 +52,6 @@ using EndpointHelpers;
 
 [assembly: GenerateUrlHelper]
 [assembly: GenerateLinkGenerator]
-[assembly: GenerateRedirectToAction]
-```
-
-Or enable all generators with a single attribute:
-
-```csharp
-using EndpointHelpers;
-
-[assembly: GenerateEndpointHelpers]
 ```
 
 Or apply to a specific controller:
@@ -71,7 +62,7 @@ using EndpointHelpers;
 [GenerateUrlHelper]
 [GenerateLinkGenerator]
 [GenerateRedirectToAction]
-public class HomeController : Controller
+public partial class HomeController : Controller
 {
     public IActionResult Index() => View();
     public IActionResult Privacy() => View();
@@ -83,7 +74,7 @@ Or only to a specific action:
 ```csharp
 using EndpointHelpers;
 
-public class HomeController : Controller
+public partial class HomeController : Controller
 {
     [GenerateUrlHelper]
     [GenerateRedirectToAction]
@@ -95,7 +86,7 @@ public class HomeController : Controller
 Redirect example:
 
 ```csharp
-public class OrdersController : Controller
+public partial class OrdersController : Controller
 {
     public IActionResult Index() => View();
     
@@ -104,7 +95,7 @@ public class OrdersController : Controller
 
     public IActionResult Save()
     {
-        return this.RedirectToDetails(orderId: 123, source: "created");
+        return RedirectToDetails(orderId: 123, source: "created");
     }
 }
 ```
@@ -113,9 +104,11 @@ public class OrdersController : Controller
 
 Generation can be enabled at different scopes:
 
-- Assembly: `[assembly: GenerateUrlHelper]`, `[assembly: GenerateLinkGenerator]`, `[assembly: GenerateRedirectToAction]`, or `[assembly: GenerateEndpointHelpers]`.
-- Controller: `[GenerateUrlHelper]`, `[GenerateLinkGenerator]`, `[GenerateRedirectToAction]`, or `[GenerateEndpointHelpers]` on the controller class.
-- Action: `[GenerateUrlHelper]`, `[GenerateLinkGenerator]`, `[GenerateRedirectToAction]`, or `[GenerateEndpointHelpers]` on a specific action method.
+- Assembly: `[assembly: GenerateUrlHelper]`, `[assembly: GenerateLinkGenerator]`.
+- Controller: `[GenerateUrlHelper]`, `[GenerateLinkGenerator]`, `[GenerateRedirectToAction]` on the controller class.
+- Action: `[GenerateUrlHelper]`, `[GenerateLinkGenerator]`, `[GenerateRedirectToAction]` on a specific action method.
+- `GenerateRedirectToAction` does not support assembly-level attributes.
+- Controllers must be declared `partial` when using `GenerateRedirectToAction`.
 
 You can exclude methods using:
 
@@ -128,7 +121,8 @@ You can exclude methods using:
 
 - Controllers are discovered by name: non-abstract classes ending with `Controller`.
 - Only public, ordinary methods are included.
-- Generated helpers are placed in the `EndpointHelpers` namespace.
+- UrlHelper and LinkGenerator helpers are placed in the `EndpointHelpers` namespace.
+- Redirect helpers are generated as `partial` members in the controller namespace.
 - Extension properties use the controller name without the `Controller` suffix.
 
 ### Controller and action discovery
@@ -136,7 +130,7 @@ You can exclude methods using:
 [GenerateUrlHelper]
 [GenerateLinkGenerator]
 [GenerateRedirectToAction]
-public class OrdersController : Controller
+public partial class OrdersController : Controller
 {
     public IActionResult Index() => View();
     

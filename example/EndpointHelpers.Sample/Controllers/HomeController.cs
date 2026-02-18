@@ -1,11 +1,13 @@
 using System.Diagnostics;
+using EndpointHelpers;
 using EndpointHelpers.Sample.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EndpointHelpers.Sample.Controllers;
 
 [GenerateLinkGenerator]
-public class HomeController : Controller
+[GenerateRedirectToAction]
+public partial class HomeController : Controller
 {
     public IActionResult Index()
     {

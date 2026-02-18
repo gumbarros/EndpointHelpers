@@ -14,12 +14,12 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
 {
     protected const string EndpointHelpersNamespace = "EndpointHelpers";
 
-    private const string UnifiedGenerateAttributeName = "GenerateEndpointHelpersAttribute";
     private const string NonActionAttributeName = "Microsoft.AspNetCore.Mvc.NonActionAttribute";
 
     protected abstract string GenerateAttributeName { get; }
     protected abstract string IgnoreAttributeName { get; }
     protected abstract string OutputFileName { get; }
+    protected virtual bool SupportsAssemblyGenerateAttribute => true;
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -65,8 +65,7 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
         var symbol = context.SemanticModel.GetSymbolInfo(attribute).Symbol as IMethodSymbol;
         var attributeName = symbol?.ContainingType.ToDisplayString();
 
-        return attributeName == $"{EndpointHelpersNamespace}.{GenerateAttributeName}" ||
-               attributeName == $"{EndpointHelpersNamespace}.{UnifiedGenerateAttributeName}";
+        return attributeName == $"{EndpointHelpersNamespace}.{GenerateAttributeName}";
     }
 
     private ControllerModel? TransformController(GeneratorSyntaxContext context)
@@ -77,8 +76,7 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
 
         var classHasGenerateAttribute = HasAnyAttribute(
             typeSymbol,
-            $"{EndpointHelpersNamespace}.{GenerateAttributeName}",
-            $"{EndpointHelpersNamespace}.{UnifiedGenerateAttributeName}");
+            $"{EndpointHelpersNamespace}.{GenerateAttributeName}");
 
         var methods = typeSymbol.GetMembers()
             .OfType<IMethodSymbol>()
@@ -91,8 +89,7 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
                 method.Name,
                 HasAnyAttribute(
                     method,
-                    $"{EndpointHelpersNamespace}.{GenerateAttributeName}",
-                    $"{EndpointHelpersNamespace}.{UnifiedGenerateAttributeName}"),
+                    $"{EndpointHelpersNamespace}.{GenerateAttributeName}"),
                 [
                     ..method.Parameters
                         .Where(static parameter => !IsIgnoredParameter(parameter))
@@ -107,7 +104,9 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
         return new ControllerModel(
             GetMetadataName(typeSymbol),
             typeSymbol.ToDisplayString(),
+            typeSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty,
             typeSymbol.Name,
+            GetAccessibilityKeyword(typeSymbol.DeclaredAccessibility),
             classHasGenerateAttribute,
             methods);
     }
@@ -117,7 +116,8 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
         IReadOnlyList<ControllerModel> rawControllers,
         bool assemblyHasGenerate)
     {
-        var selectedControllers = SelectControllers(rawControllers, assemblyHasGenerate);
+        var effectiveAssemblyHasGenerate = SupportsAssemblyGenerateAttribute && assemblyHasGenerate;
+        var selectedControllers = SelectControllers(rawControllers, effectiveAssemblyHasGenerate);
         if (selectedControllers.Length == 0)
             return;
 
@@ -237,7 +237,9 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
     protected sealed record ControllerModel(
         string MetadataName,
         string TypeName,
+        string NamespaceName,
         string Name,
+        string AccessibilityKeyword,
         bool ClassHasGenerateAttribute,
         ImmutableArray<ActionModel> Methods);
 
@@ -251,4 +253,18 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
         string Name,
         bool IsOptional,
         string? DefaultValueLiteral);
+
+    private static string GetAccessibilityKeyword(Accessibility accessibility)
+    {
+        return accessibility switch
+        {
+            Accessibility.Public => "public",
+            Accessibility.Internal => "internal",
+            Accessibility.Private => "private",
+            Accessibility.Protected => "protected",
+            Accessibility.ProtectedAndInternal => "private protected",
+            Accessibility.ProtectedOrInternal => "protected internal",
+            _ => "internal"
+        };
+    }
 }

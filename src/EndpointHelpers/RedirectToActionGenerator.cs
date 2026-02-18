@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -11,7 +11,8 @@ public sealed class RedirectToActionGenerator : ControllerGeneratorBase
 {
     protected override string GenerateAttributeName => "GenerateRedirectToActionAttribute";
     protected override string IgnoreAttributeName => "RedirectToActionIgnoreAttribute";
-    protected override string OutputFileName => "RedirectToActionExtensions.g.cs";
+    protected override string OutputFileName => "RedirectToActionControllers.g.cs";
+    protected override bool SupportsAssemblyGenerateAttribute => false;
 
     protected override string BuildSource(IReadOnlyList<ControllerModel> selectedControllers)
     {
@@ -23,59 +24,74 @@ public sealed class RedirectToActionGenerator : ControllerGeneratorBase
         sb.AppendLine("using Microsoft.AspNetCore.Mvc;");
         sb.AppendLine("using Microsoft.AspNetCore.Routing;");
         sb.AppendLine();
-        sb.AppendLine($"namespace {EndpointHelpersNamespace};");
-        sb.AppendLine();
 
-        sb.AppendLine("public static class ControllerExtensions");
-        sb.AppendLine("{");
+        var namespaces = selectedControllers
+            .GroupBy(static controller => controller.NamespaceName ?? string.Empty)
+            .OrderBy(static group => group.Key, StringComparer.Ordinal);
 
-        foreach (var controller in selectedControllers)
+        foreach (var group in namespaces)
         {
-            sb.AppendLine($"    extension({controller.TypeName} controller)");
-            sb.AppendLine("    {");
+            var hasNamespace = !string.IsNullOrEmpty(group.Key);
+            var indent = hasNamespace ? "    " : string.Empty;
 
-            var controllerName = controller.Name.Replace("Controller", string.Empty);
-
-            foreach (var method in controller.Methods)
+            if (hasNamespace)
             {
-                var actionMethodName = $"RedirectTo{method.Name}";
-                var parameters = string.Join(
-                    ", ",
-                    method.Parameters.Select(static parameter =>
-                        parameter.IsOptional
-                            ? $"{parameter.TypeName} {parameter.Name} = {parameter.DefaultValueLiteral}"
-                            : $"{parameter.TypeName} {parameter.Name}"));
+                sb.AppendLine($"namespace {group.Key}");
+                sb.AppendLine("{");
+            }
 
-                sb.AppendLine($"        public RedirectToActionResult {actionMethodName}({parameters})");
-                sb.AppendLine("        {");
+            foreach (var controller in group)
+            {
+                var controllerName = controller.Name.Replace("Controller", string.Empty);
 
-                if (method.Parameters.Length == 0)
+                sb.AppendLine($"{indent}{controller.AccessibilityKeyword} partial class {controller.Name}");
+                sb.AppendLine($"{indent}{{");
+
+                foreach (var method in controller.Methods)
                 {
-                    sb.AppendLine($"            return controller.RedirectToAction(\"{method.Name}\", \"{controllerName}\")!;");
+                    var actionMethodName = $"RedirectTo{method.Name}";
+                    var parameters = string.Join(
+                        ", ",
+                        method.Parameters.Select(static parameter =>
+                            parameter.IsOptional
+                                ? $"{parameter.TypeName} {parameter.Name} = {parameter.DefaultValueLiteral}"
+                                : $"{parameter.TypeName} {parameter.Name}"));
+
+                    sb.AppendLine($"{indent}    public RedirectToActionResult {actionMethodName}({parameters})");
+                    sb.AppendLine($"{indent}    {{");
+
+                    if (method.Parameters.Length == 0)
+                    {
+                        sb.AppendLine($"{indent}        return RedirectToAction(\"{method.Name}\", \"{controllerName}\")!;");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"{indent}        return RedirectToAction(");
+                        sb.AppendLine($"{indent}            \"{method.Name}\",");
+                        sb.AppendLine($"{indent}            \"{controllerName}\",");
+                        sb.AppendLine($"{indent}            new RouteValueDictionary");
+                        sb.AppendLine($"{indent}            {{");
+
+                        foreach (var parameter in method.Parameters)
+                            sb.AppendLine($"{indent}                {{ \"{parameter.Name}\", {parameter.Name} }},");
+
+                        sb.AppendLine(indent + "            })!;");
+                    }
+
+                    sb.AppendLine(indent + "    }");
+                    sb.AppendLine();
                 }
-                else
-                {
-                    sb.AppendLine("            return controller.RedirectToAction(");
-                    sb.AppendLine($"                \"{method.Name}\",");
-                    sb.AppendLine($"                \"{controllerName}\",");
-                    sb.AppendLine("                new RouteValueDictionary");
-                    sb.AppendLine("                {");
 
-                    foreach (var parameter in method.Parameters)
-                        sb.AppendLine($"                    {{ \"{parameter.Name}\", {parameter.Name} }},");
-
-                    sb.AppendLine("                })!;");
-                }
-
-                sb.AppendLine("        }");
+                sb.AppendLine(indent + "}");
                 sb.AppendLine();
             }
 
-            sb.AppendLine("    }");
-            sb.AppendLine();
+            if (hasNamespace)
+            {
+                sb.AppendLine("}");
+                sb.AppendLine();
+            }
         }
-
-        sb.AppendLine("}");
 
         return sb.ToString();
     }

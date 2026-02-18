@@ -11,18 +11,21 @@
     <projectFile profileName="DebugRoslynSourceGenerator">src/EndpointHelpers/EndpointHelpers.csproj</projectFile>
     <projectFile profileName="DebugRoslynSourceGenerator">src/UrlHelperGenerator/UrlHelperGenerator.csproj</projectFile>
   </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="2c504c9f-27e2-4065-9e4b-647bd2aaeae6" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.EndpointHelpers/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.EndpointHelpers/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/EndpointHelpers.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/EndpointHelpers.sln.DotSettings.user" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/AssemblyAttributes.cs" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/AssemblyAttributes.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/HomeController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/HomeController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/OrdersController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/OrdersController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/ControllerGeneratorBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/ControllerGeneratorBase.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/EndpointHelpers.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/EndpointHelpers.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/LinkGeneratorGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/LinkGeneratorGenerator.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/RedirectToActionGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/RedirectToActionGenerator.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/UrlHelperGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/UrlHelperGenerator.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/EndpointHelpers.Tests/UrlHelperGeneratorTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/UrlHelperGeneratorTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/EndpointHelpers.Tests/RedirectToActionGeneratorTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/RedirectToActionGeneratorTests.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,12 +35,20 @@
   <component name="DpaMonitoringSettings">
     <option name="firstShow" value="false" />
   </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="11" />
+    <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
+  </component>
   <component name="Git.Settings">
+    <option name="PUSH_AUTO_UPDATE" value="true" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/1b5771b5fec745b0981c5a0f0f8e86ae4a600/04/0b35b2e6/RouteValueDictionary.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/2cfcdc1b79884e75acff21b14416f3bf56738/f5/516dbae0/ControllerBase.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/46682709557f4693bdda658bb91837fe1d3e00/99/2ec4f00e/UrlHelperExtensions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/46682709557f4693bdda658bb91837fe1d3e00/bd/ec7a7c0e/ControllerBase.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/6ae1d5bdb0eb48fb8558a55804de21043b800/64/6d4035d6/UrlActionContext.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/9db6ab8b57c6427fb466b41d82b9a49e3b800/b4/edd75550/UrlActionContext.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/9db6ab8b57c6427fb466b41d82b9a49e3b800/e9/9062a969/IUrlHelper.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bf04822e50794b9f8c84efb0930c84331d3e00/27/17e244c9/RouteValueAttribute.cs" root0="SKIP_HIGHLIGHTING" />
@@ -47,16 +58,12 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/c0daeb6dd25c4b0792be01c7e96c0bcbae000/f9/1cbbf0ea/Controller.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/d9f00e70fec1492f94bcec239fe696d5b6c00/1f/efd2ec43/ImmutableArrayExtensions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/a9277c765bab5aee65e9d250d2a51ff0966184bb838ff19b38e87ecd167d/IParameterSymbol.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/c0e3d2fe76db36d3f65bacad1b619c3e0a7323f40bb5f45a0ebfff93a4e8dce/SymbolDisplay.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/example/EndpointHelpers.Sample/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.css.map" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/2C1EE5CD62C99FE704CE9F07/EndpointHelpers/EndpointHelpers.LinkGeneratorGenerator/LinkGeneratorExtensions.g.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/2C1EE5CD62C99FE704CE9F07/EndpointHelpers/EndpointHelpers.RedirectToActionGenerator/RedirectToActionExtensions.g.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/2C1EE5CD62C99FE704CE9F07/EndpointHelpers/EndpointHelpers.UrlHelperGenerator/Attributes.g.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/2C1EE5CD62C99FE704CE9F07/EndpointHelpers/EndpointHelpers.UrlHelperGenerator/UrlHelperExtensions.g.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/99388C7491BDF89BB75FB827/EndpointHelpers/EndpointHelpers.RedirectToActionGenerator/RedirectToActionExtensions.g.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/BCF8A0FF8C48F457BDFE7E7F/Microsoft.AspNetCore.App.SourceGenerators/Microsoft.AspNetCore.SourceGenerators.PublicProgramSourceGenerator/PublicTopLevelProgram.Generated.g.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/BCF8A0FF8C48F457BDFE7E7F/UrlHelperGenerator/UrlHelperGenerator.LinkGeneratorGenerator/Attributes.g.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/BCF8A0FF8C48F457BDFE7E7F/UrlHelperGenerator/UrlHelperGenerator.LinkGeneratorGenerator/LinkGeneratorExtensions.g.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/BCF8A0FF8C48F457BDFE7E7F/UrlHelperGenerator/UrlHelperGenerator.UrlHelperGenerator/Attributes.g.cs" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProjectColorInfo">{
@@ -76,19 +83,25 @@
     ".NET Launch Settings Profile.EndpointHelpers.Sample: https.executor": "Debug",
     ".NET Launch Settings Profile.UrlHelperGenerator.Sample: http.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "cf08f83a-9f7a-4be8-8c08-341d1ac42e25.executor": "Debug",
     "d74964df-8abf-4130-b992-0130f266c108.executor": "Debug",
     "git-widget-placeholder": "master",
     "last_opened_file_path": "/home/gumbarros/RiderProjects/EndpointHelpers/EndpointHelpers.slnx",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager" selected=".NET Launch Settings Profile.EndpointHelpers.Sample: https">
+  <component name="RunManager" selected=".NET Launch Settings Profile.EndpointHelpers: DebugRoslynSourceGenerator">
     <configuration name="Barros.UrlHelperGenerator: DebugRoslynSourceGenerator" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/src/Barros.UrlHelperGenerator/UrlHelperGenerator/UrlHelperGenerator.csproj" />
       <option name="LAUNCH_PROFILE_TFM" value=".NETStandard,Version=v2.0" />
@@ -254,7 +267,8 @@
       <workItem from="1770746078345" duration="63000" />
       <workItem from="1770766851040" duration="3069000" />
       <workItem from="1770811489366" duration="2299000" />
-      <workItem from="1770861931931" duration="1016000" />
+      <workItem from="1770861931931" duration="1696000" />
+      <workItem from="1771414657852" duration="523000" />
     </task>
     <task id="LOCAL-00001" summary="Initial Commit">
       <option name="closed" value="true" />
@@ -392,7 +406,15 @@
       <option name="project" value="LOCAL" />
       <updated>1770768834378</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="bugfixes: Cover ignored parameters and struct defaults">
+      <option name="closed" value="true" />
+      <created>1770863269180</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1770863269180</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -418,7 +440,8 @@
     <MESSAGE value="Use records for models" />
     <MESSAGE value="Update test dependencies" />
     <MESSAGE value="Remove unused using directives" />
-    <option name="LAST_COMMIT_MESSAGE" value="Remove unused using directives" />
+    <MESSAGE value="bugfixes: Cover ignored parameters and struct defaults" />
+    <option name="LAST_COMMIT_MESSAGE" value="bugfixes: Cover ignored parameters and struct defaults" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -435,6 +458,32 @@
           <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="3" />
         </breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/src/EndpointHelpers/RedirectToActionGenerator.cs</url>
+          <line>28</line>
+          <properties documentPath="$PROJECT_DIR$/src/EndpointHelpers/RedirectToActionGenerator.cs" containingFunctionPresentation="Method 'BuildSource'">
+            <startOffsets>
+              <option value="1012" />
+            </startOffsets>
+            <endOffsets>
+              <option value="1205" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/test/EndpointHelpers.Tests/RedirectToActionGeneratorTests.cs</url>
+          <line>48</line>
+          <properties documentPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/RedirectToActionGeneratorTests.cs" containingFunctionPresentation="Method 'Generates_Action_Method_With_Parameters'">
+            <startOffsets>
+              <option value="1936" />
+            </startOffsets>
+            <endOffsets>
+              <option value="2033" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>

@@ -58,13 +58,6 @@ public sealed class UrlHelperGenerator : ControllerGeneratorBase
                                                  [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
                                                  [global::System.AttributeUsage(global::System.AttributeTargets.Method)]
                                                  internal sealed class {RedirectIgnoreAttributeName} : global::System.Attribute;
-
-                                                 [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
-                                                 [global::System.AttributeUsage(
-                                                     global::System.AttributeTargets.Method |
-                                                     global::System.AttributeTargets.Class |
-                                                     global::System.AttributeTargets.Assembly)]
-                                                 internal sealed class GenerateEndpointHelpersAttribute : global::System.Attribute;
                                                  
                                                  """;
 
