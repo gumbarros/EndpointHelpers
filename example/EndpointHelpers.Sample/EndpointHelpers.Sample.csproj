@@ -10,6 +10,10 @@
       <ProjectReference Include="..\..\src\EndpointHelpers\EndpointHelpers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
+    </ItemGroup>
+
 
 
 

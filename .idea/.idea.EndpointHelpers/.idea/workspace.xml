@@ -16,16 +16,28 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2c504c9f-27e2-4065-9e4b-647bd2aaeae6" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/ProductsController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Models/Product.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Products/Details.cshtml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Products/Grid.cshtml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Products/Index.cshtml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Products/Landing.cshtml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/EndpointHelpers/ViewGenerator.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/ViewGeneratorTests.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.EndpointHelpers/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.EndpointHelpers/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/EndpointHelpers.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/EndpointHelpers.sln.DotSettings.user" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/AssemblyAttributes.cs" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/AssemblyAttributes.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/HomeController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/HomeController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/OrdersController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/OrdersController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/EndpointHelpers.Sample.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/EndpointHelpers.Sample.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Home/Privacy.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Home/Privacy.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Shared/_Layout.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Shared/_Layout.cshtml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/ControllerGeneratorBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/ControllerGeneratorBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/LinkGeneratorGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/LinkGeneratorGenerator.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/RedirectToActionGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/RedirectToActionGenerator.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/UrlHelperGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/UrlHelperGenerator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/EndpointHelpers.Tests/EndpointHelpers.Tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/EndpointHelpers.Tests.csproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/EndpointHelpers.Tests/RedirectToActionGeneratorTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/RedirectToActionGeneratorTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/EndpointHelpers.Tests/UrlHelperGeneratorTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/UrlHelperGeneratorTests.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,8 +56,11 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/003a7dda36cd474a9836baa26b38816a83800/02/eb5e3574/ThrowHelper.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/1b5771b5fec745b0981c5a0f0f8e86ae4a600/04/0b35b2e6/RouteValueDictionary.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/2cfcdc1b79884e75acff21b14416f3bf56738/f5/516dbae0/ControllerBase.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/317afcc7fb6b42059684d84db309bbfbae000/54/c40e0fdc/Controller.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/317afcc7fb6b42059684d84db309bbfbae000/fb/ed0edd70/ViewResult.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/46682709557f4693bdda658bb91837fe1d3e00/99/2ec4f00e/UrlHelperExtensions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/46682709557f4693bdda658bb91837fe1d3e00/bd/ec7a7c0e/ControllerBase.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/6ae1d5bdb0eb48fb8558a55804de21043b800/64/6d4035d6/UrlActionContext.cs" root0="FORCE_HIGHLIGHTING" />
@@ -57,9 +72,17 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bf04822e50794b9f8c84efb0930c84331d3e00/fa/8b393dda/AreaAttribute.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/c0daeb6dd25c4b0792be01c7e96c0bcbae000/f9/1cbbf0ea/Controller.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/d9f00e70fec1492f94bcec239fe696d5b6c00/1f/efd2ec43/ImmutableArrayExtensions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/f792d832911f4000942199b25437c24720780/13/e0745700/AspMvcActionAttribute.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/a9277c765bab5aee65e9d250d2a51ff0966184bb838ff19b38e87ecd167d/IParameterSymbol.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/c0e3d2fe76db36d3f65bacad1b619c3e0a7323f40bb5f45a0ebfff93a4e8dce/SymbolDisplay.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/example/EndpointHelpers.Sample/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.css.map" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/99388C7491BDF89BB75FB827/EndpointHelpers/EndpointHelpers.LinkGeneratorGenerator/LinkGeneratorExtensions.g.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/99388C7491BDF89BB75FB827/EndpointHelpers/EndpointHelpers.RedirectToActionGenerator/RedirectToActionControllers.g.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/99388C7491BDF89BB75FB827/EndpointHelpers/EndpointHelpers.UrlHelperGenerator/Attributes.g.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/99388C7491BDF89BB75FB827/EndpointHelpers/EndpointHelpers.UrlHelperGenerator/Microsoft.CodeAnalysis.EmbeddedAttribute.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/99388C7491BDF89BB75FB827/EndpointHelpers/EndpointHelpers.UrlHelperGenerator/UrlHelperExtensions.g.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/99388C7491BDF89BB75FB827/EndpointHelpers/EndpointHelpers.ViewGenerator/ViewHelpers.g.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///tmp/JetBrainsPerUserTemp-1000-1/SourceGeneratedDocuments/99388C7491BDF89BB75FB827/Microsoft.AspNetCore.App.SourceGenerators/Microsoft.AspNetCore.SourceGenerators.PublicProgramSourceGenerator/PublicTopLevelProgram.Generated.g.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="McpProjectServerCommands">
     <commands />
@@ -79,7 +102,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    ".NET Launch Settings Profile.EndpointHelpers.Sample: http.executor": "Run",
+    ".NET Launch Settings Profile.EndpointHelpers.Sample: http.executor": "Debug",
     ".NET Launch Settings Profile.EndpointHelpers.Sample: https.executor": "Debug",
     ".NET Launch Settings Profile.UrlHelperGenerator.Sample: http.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
@@ -101,7 +124,7 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager" selected=".NET Launch Settings Profile.EndpointHelpers: DebugRoslynSourceGenerator">
+  <component name="RunManager" selected=".NET Launch Settings Profile.EndpointHelpers.Sample: http">
     <configuration name="Barros.UrlHelperGenerator: DebugRoslynSourceGenerator" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/src/Barros.UrlHelperGenerator/UrlHelperGenerator/UrlHelperGenerator.csproj" />
       <option name="LAUNCH_PROFILE_TFM" value=".NETStandard,Version=v2.0" />
@@ -459,19 +482,6 @@
           <option name="timeStamp" value="3" />
         </breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/src/EndpointHelpers/RedirectToActionGenerator.cs</url>
-          <line>28</line>
-          <properties documentPath="$PROJECT_DIR$/src/EndpointHelpers/RedirectToActionGenerator.cs" containingFunctionPresentation="Method 'BuildSource'">
-            <startOffsets>
-              <option value="1012" />
-            </startOffsets>
-            <endOffsets>
-              <option value="1205" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/test/EndpointHelpers.Tests/RedirectToActionGeneratorTests.cs</url>
           <line>48</line>
           <properties documentPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/RedirectToActionGeneratorTests.cs" containingFunctionPresentation="Method 'Generates_Action_Method_With_Parameters'">
@@ -479,7 +489,7 @@
               <option value="1936" />
             </startOffsets>
             <endOffsets>
-              <option value="2033" />
+              <option value="2036" />
             </endOffsets>
           </properties>
           <option name="timeStamp" value="5" />

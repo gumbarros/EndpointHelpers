@@ -13,7 +13,9 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
     protected override string IgnoreAttributeName => "LinkGeneratorIgnoreAttribute";
     protected override string OutputFileName => "LinkGeneratorExtensions.g.cs";
 
-    protected override string BuildSource(IReadOnlyList<ControllerModel> selectedControllers)
+    protected override string BuildSource(
+        IReadOnlyList<ControllerModel> selectedControllers,
+        bool hasJetbrainsAnnotations = false)
     {
         var sb = new StringBuilder();
 

@@ -1,0 +1,43 @@
+@model EndpointHelpers.Sample.Models.Product
+@{
+    ViewData["Title"] = $"{Model.Name} details";
+    var a = this;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="mb-0">@Model.Name</h1>
+    <a class="btn btn-link" href="@Url.Products.Index()">Back to products</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-1">@Model.Name</h5>
+                <p class="text-muted mb-3">@Model.Category · @Model.Rating.ToString("0.0")★</p>
+                <p class="lead">$@Model.Price</p>
+                <p>@Model.Summary</p>
+                @if (Model.Featured)
+                {
+                    <span class="badge text-bg-primary">Featured pick</span>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="list-group shadow-sm">
+            <div class="list-group-item d-flex justify-content-between">
+                <span>Category</span>
+                <strong>@Model.Category</strong>
+            </div>
+            <div class="list-group-item d-flex justify-content-between">
+                <span>Rating</span>
+                <strong>@Model.Rating.ToString("0.0")</strong>
+            </div>
+            <div class="list-group-item d-flex justify-content-between">
+                <span>Featured</span>
+                <strong>@(Model.Featured ? "Yes" : "No")</strong>
+            </div>
+        </div>
+    </div>
+</div>

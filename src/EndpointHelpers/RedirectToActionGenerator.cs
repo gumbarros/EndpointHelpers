@@ -14,7 +14,9 @@ public sealed class RedirectToActionGenerator : ControllerGeneratorBase
     protected override string OutputFileName => "RedirectToActionControllers.g.cs";
     protected override bool SupportsAssemblyGenerateAttribute => false;
 
-    protected override string BuildSource(IReadOnlyList<ControllerModel> selectedControllers)
+    protected override string BuildSource(
+        IReadOnlyList<ControllerModel> selectedControllers,
+        bool hasJetbrainsAnnotations = false)
     {
         var sb = new StringBuilder();
 
@@ -43,6 +45,7 @@ public sealed class RedirectToActionGenerator : ControllerGeneratorBase
             foreach (var controller in group)
             {
                 var controllerName = controller.Name.Replace("Controller", string.Empty);
+                var methodAccess = controller.IsSealed ? "private" : "protected";
 
                 sb.AppendLine($"{indent}{controller.AccessibilityKeyword} partial class {controller.Name}");
                 sb.AppendLine($"{indent}{{");
@@ -57,7 +60,7 @@ public sealed class RedirectToActionGenerator : ControllerGeneratorBase
                                 ? $"{parameter.TypeName} {parameter.Name} = {parameter.DefaultValueLiteral}"
                                 : $"{parameter.TypeName} {parameter.Name}"));
 
-                    sb.AppendLine($"{indent}    public RedirectToActionResult {actionMethodName}({parameters})");
+                    sb.AppendLine($"{indent}    {methodAccess} RedirectToActionResult {actionMethodName}({parameters})");
                     sb.AppendLine($"{indent}    {{");
 
                     if (method.Parameters.Length == 0)

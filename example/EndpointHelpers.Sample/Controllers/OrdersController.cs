@@ -1,11 +1,11 @@
 using System.Globalization;
-using EndpointHelpers;
 using EndpointHelpers.Sample.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EndpointHelpers.Sample.Controllers;
 
 [GenerateRedirectToAction]
+[GenerateViewHelpers]
 public sealed partial class OrdersController : Controller
 {
     private static readonly List<Order> Orders = [];
@@ -40,9 +40,10 @@ public sealed partial class OrdersController : Controller
         ViewData["Status"] = status ?? "";
         ViewData["Customer"] = customer ?? "";
         ViewData["Query"] = q ?? "";
-        return View(list);
+        return IndexView(list);
     }
-
+    
+    
     public IActionResult Details(int orderId, string? source = null)
     {
         var order = Orders.FirstOrDefault(o => o.Id == orderId);
@@ -113,9 +114,14 @@ public sealed partial class OrdersController : Controller
         order.Status = model.Status;
         order.Total = model.Total;
 
-        return RedirectToDetails(orderId, "updated");
+        return RedirectToError();
     }
-
+    
+    public IActionResult RedirectToError()
+    {
+        return RedirectToAction("Error", "Home");
+    }
+    
     public IActionResult Delete(int orderId)
     {
         var order = Orders.FirstOrDefault(o => o.Id == orderId);

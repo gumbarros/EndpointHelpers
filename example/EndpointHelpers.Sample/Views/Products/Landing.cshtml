@@ -1,0 +1,34 @@
+@model IReadOnlyList<EndpointHelpers.Sample.Models.Product>
+@{
+    ViewData["Title"] = "Workspace Essentials";
+}
+
+<section class="py-5 text-center bg-light rounded-3 mb-4">
+    <div class="container">
+        <h1 class="display-5 fw-bold">Build a workspace you love</h1>
+        <p class="lead text-muted mb-4">Curated picks with strong ratings and fast shipping.</p>
+        <a class="btn btn-primary btn-lg" href="@Url.Products.Index()">Browse full catalog</a>
+    </div>
+</section>
+
+<div class="row row-cols-1 row-cols-md-3 g-3">
+    @foreach (var product in Model)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between mb-2">
+                        <h5 class="card-title mb-0">@product.Name</h5>
+                        <span class="badge text-bg-success">Top pick</span>
+                    </div>
+                    <p class="card-subtitle mb-2 text-muted">@product.Category · @product.Rating.ToString("0.0")★</p>
+                    <p class="card-text">@product.Summary</p>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <strong>$@product.Price</strong>
+                    <a class="btn btn-sm btn-outline-primary" href="@Url.Products.Details(product.Id)">View</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

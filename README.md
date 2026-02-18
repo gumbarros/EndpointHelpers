@@ -1,12 +1,13 @@
 # EndpointHelpers
 
-EndpointHelpers is a Roslyn source generator that creates strongly-typed helpers for ASP.NET Core MVC URL generation and redirects. It generates:
+EndpointHelpers is a Roslyn source generator that creates strongly-typed helpers for ASP.NET Core MVC controllers. It generates:
 
 - `IUrlHelper` helpers with action methods per controller.
 - `LinkGenerator` helpers with `Get{Action}Path` methods, including `HttpContext` overloads.
+- Redirect helpers for controller actions, so `RedirectToAction("Index")` becomes `RedirectToIndex()`.
+- View helpers on controllers, so `return View("Index")` becomes `return IndexView()`.
 - Extension properties on `IUrlHelper` and `LinkGenerator` to access the helpers.
-- Redirect helpers for controller actions, so `RedirectToAction("Index")` becomes `this.RedirectToIndex()`.
-- Attribute types used to control generation.
+- Attribute types are used to control generation.
 
 This package ships only a source generator and generated code. There is no runtime dependency.
 
@@ -43,6 +44,16 @@ or
 dotnet add package EndpointHelpers
 ```
 
+Optional (for better IntelliSense in JetBrains IDEs):
+
+```xml
+<ItemGroup>
+  <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
+</ItemGroup>
+```
+
+When `JetBrains.Annotations` is installed, generated MVC helper methods include ASP MVC annotations, and IntelliSense/navigation for views and model parameters works correctly when using R# or Rider.
+
 ## Quick Start
 
 Enable generation at the assembly level:
@@ -62,6 +73,7 @@ using EndpointHelpers;
 [GenerateUrlHelper]
 [GenerateLinkGenerator]
 [GenerateRedirectToAction]
+[GenerateViewHelpers]
 public partial class HomeController : Controller
 {
     public IActionResult Index() => View();
@@ -107,8 +119,9 @@ Generation can be enabled at different scopes:
 - Assembly: `[assembly: GenerateUrlHelper]`, `[assembly: GenerateLinkGenerator]`.
 - Controller: `[GenerateUrlHelper]`, `[GenerateLinkGenerator]`, `[GenerateRedirectToAction]` on the controller class.
 - Action: `[GenerateUrlHelper]`, `[GenerateLinkGenerator]`, `[GenerateRedirectToAction]` on a specific action method.
-- `GenerateRedirectToAction` does not support assembly-level attributes.
-- Controllers must be declared `partial` when using `GenerateRedirectToAction`.
+- View helpers: `[GenerateViewHelpers]` on the controller class (controller-only, not per-action or assembly).
+- `GenerateRedirectToAction` does not support assembly-level attributes and requires controllers declared `partial`.
+- `GenerateViewHelpers` does not support assembly-level attributes and requires controllers declared `partial`.
 
 You can exclude methods using:
 

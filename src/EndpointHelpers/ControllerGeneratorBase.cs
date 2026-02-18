@@ -40,16 +40,26 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
             .Where(static model => model is not null)
             .Select(static (model, _) => model!);
 
-        context.RegisterSourceOutput(
-            controllers.Collect().Combine(assemblyHasGenerate),
-            (ctx, data) => Generate(ctx, data.Left, data.Right));
+        RegisterSourceOutput(context, controllers, assemblyHasGenerate);
     }
 
     protected virtual void RegisterPostInitialization(IncrementalGeneratorInitializationContext context)
     {
     }
 
-    protected abstract string BuildSource(IReadOnlyList<ControllerModel> selectedControllers);
+    protected virtual void RegisterSourceOutput(
+        IncrementalGeneratorInitializationContext context,
+        IncrementalValuesProvider<ControllerModel> controllers,
+        IncrementalValueProvider<bool> assemblyHasGenerate)
+    {
+        context.RegisterSourceOutput(
+            controllers.Collect().Combine(assemblyHasGenerate),
+            (ctx, data) => Generate(ctx, data.Left, data.Right));
+    }
+
+    protected abstract string BuildSource(
+        IReadOnlyList<ControllerModel> selectedControllers,
+        bool hasJetbrainsAnnotations = false);
 
     private static bool IsAssemblyAttributeCandidate(AttributeSyntax attribute)
     {
@@ -107,14 +117,16 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
             typeSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty,
             typeSymbol.Name,
             GetAccessibilityKeyword(typeSymbol.DeclaredAccessibility),
+            typeSymbol.IsSealed,
             classHasGenerateAttribute,
             methods);
     }
 
-    private void Generate(
+    protected void Generate(
         SourceProductionContext context,
         IReadOnlyList<ControllerModel> rawControllers,
-        bool assemblyHasGenerate)
+        bool assemblyHasGenerate,
+        bool hasJetbrainsAnnotations = false)
     {
         var effectiveAssemblyHasGenerate = SupportsAssemblyGenerateAttribute && assemblyHasGenerate;
         var selectedControllers = SelectControllers(rawControllers, effectiveAssemblyHasGenerate);
@@ -123,10 +135,10 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
 
         context.AddSource(
             OutputFileName,
-            SourceText.From(BuildSource(selectedControllers), Encoding.UTF8));
+            SourceText.From(BuildSource(selectedControllers, hasJetbrainsAnnotations), Encoding.UTF8));
     }
 
-    private static ImmutableArray<ControllerModel> SelectControllers(
+    protected static ImmutableArray<ControllerModel> SelectControllers(
         IReadOnlyList<ControllerModel> rawControllers,
         bool assemblyHasGenerate)
     {
@@ -240,6 +252,7 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
         string NamespaceName,
         string Name,
         string AccessibilityKeyword,
+        bool IsSealed,
         bool ClassHasGenerateAttribute,
         ImmutableArray<ActionModel> Methods);
 

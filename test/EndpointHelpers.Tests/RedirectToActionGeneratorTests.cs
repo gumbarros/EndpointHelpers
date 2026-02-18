@@ -46,7 +46,7 @@ public sealed class RedirectToActionGeneratorTests
     {
         var generated = Run();
 
-        Assert.Contains("public RedirectToActionResult RedirectToIndex(int id, string slug)", generated);
+        Assert.Contains("protected RedirectToActionResult RedirectToIndex(int id, string slug)", generated);
     }
 
     [Fact]

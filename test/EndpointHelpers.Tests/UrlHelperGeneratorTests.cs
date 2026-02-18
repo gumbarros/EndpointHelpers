@@ -10,6 +10,18 @@ namespace EndpointHelpers.Tests;
 
 public sealed class UrlHelperGeneratorTests
 {
+    private const string JetBrainsAnnotationsSource = """
+
+                                                      namespace JetBrains.Annotations
+                                                      {
+                                                          [System.AttributeUsage(System.AttributeTargets.Method | System.AttributeTargets.Property | System.AttributeTargets.Field | System.AttributeTargets.Parameter)]
+                                                          public sealed class AspMvcControllerAttribute : System.Attribute;
+
+                                                          [System.AttributeUsage(System.AttributeTargets.Method | System.AttributeTargets.Property | System.AttributeTargets.Field | System.AttributeTargets.Parameter)]
+                                                          public sealed class AspMvcViewAttribute : System.Attribute;
+                                                      }
+                                                      """;
+
     private const string ControllerSource = """
 
                                             using Microsoft.AspNetCore.Mvc;
@@ -109,18 +121,32 @@ public sealed class UrlHelperGeneratorTests
         Assert.Contains("Home", generated);
     }
 
+    [Fact]
+    public void Applies_AspMvc_Annotations_When_JetBrains_Is_Available()
+    {
+        var generated = Run(ControllerSource, JetBrainsAnnotationsSource);
+
+        Assert.Contains("[global::JetBrains.Annotations.AspMvcActionAttribute]", generated);
+        Assert.Contains("[global::JetBrains.Annotations.AspMvcControllerAttribute]", generated);
+    }
+
     private static string Run()
         => Run(ControllerSource);
 
-    private static string Run(string source)
+    private static string Run(string source, params string[] additionalSources)
     {
         var generator = new UrlHelperGenerator();
 
         var driver = CSharpGeneratorDriver.Create(generator);
 
+        var syntaxTrees = new[] { source }
+            .Concat(additionalSources)
+            .Select(static s => CSharpSyntaxTree.ParseText(s))
+            .ToArray();
+
         var compilation = CSharpCompilation.Create(
             "Test",
-            [CSharpSyntaxTree.ParseText(source)],
+            syntaxTrees,
             [
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Controller).Assembly.Location),

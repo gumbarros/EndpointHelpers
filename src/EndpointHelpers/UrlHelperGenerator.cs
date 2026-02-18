@@ -15,10 +15,34 @@ public sealed class UrlHelperGenerator : ControllerGeneratorBase
     private const string LinkIgnoreAttributeName = "LinkGeneratorIgnoreAttribute";
     private const string RedirectGenerateAttributeName = "GenerateRedirectToActionAttribute";
     private const string RedirectIgnoreAttributeName = "RedirectToActionIgnoreAttribute";
+    private const string ViewGenerateAttributeName = "GenerateViewHelpersAttribute";
+    private const string ViewIgnoreAttributeName = "ViewHelpersIgnoreAttribute";
 
     protected override string GenerateAttributeName => UrlGenerateAttributeName;
     protected override string IgnoreAttributeName => UrlIgnoreAttributeName;
     protected override string OutputFileName => "UrlHelperExtensions.g.cs";
+
+    protected override void RegisterSourceOutput(
+        IncrementalGeneratorInitializationContext context,
+        IncrementalValuesProvider<ControllerModel> controllers,
+        IncrementalValueProvider<bool> assemblyHasGenerate)
+    {
+        var hasJetbrainsAnnotations = context.CompilationProvider
+            .Select(static (compilation, _) =>
+                compilation.GetTypeByMetadataName("JetBrains.Annotations.AspMvcControllerAttribute") is not null &&
+                compilation.GetTypeByMetadataName("JetBrains.Annotations.AspMvcViewAttribute") is not null);
+
+        context.RegisterSourceOutput(
+            controllers.Collect().Combine(assemblyHasGenerate).Combine(hasJetbrainsAnnotations),
+            (ctx, data) =>
+            {
+                var controllers = data.Left.Left;
+                var assemblyHasGenerateAttribute = data.Left.Right;
+                var hasJetbrains = data.Right;
+
+                Generate(ctx, controllers, assemblyHasGenerateAttribute, hasJetbrains);
+            });
+    }
 
     //lang=cs
     private const string AttributeSourceCode = $"""
@@ -58,7 +82,15 @@ public sealed class UrlHelperGenerator : ControllerGeneratorBase
                                                  [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
                                                  [global::System.AttributeUsage(global::System.AttributeTargets.Method)]
                                                  internal sealed class {RedirectIgnoreAttributeName} : global::System.Attribute;
-                                                 
+
+                                                 [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
+                                                 [global::System.AttributeUsage(global::System.AttributeTargets.Class)]
+                                                 internal sealed class {ViewGenerateAttributeName} : global::System.Attribute;
+
+                                                 [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
+                                                 [global::System.AttributeUsage(global::System.AttributeTargets.Method)]
+                                                 internal sealed class {ViewIgnoreAttributeName} : global::System.Attribute;
+                                                  
                                                  """;
 
     protected override void RegisterPostInitialization(IncrementalGeneratorInitializationContext context)
@@ -72,7 +104,9 @@ public sealed class UrlHelperGenerator : ControllerGeneratorBase
         });
     }
 
-    protected override string BuildSource(IReadOnlyList<ControllerModel> selectedControllers)
+    protected override string BuildSource(
+        IReadOnlyList<ControllerModel> selectedControllers,
+        bool hasJetbrainsAnnotations = false)
     {
         var sb = new StringBuilder();
 
@@ -99,6 +133,9 @@ public sealed class UrlHelperGenerator : ControllerGeneratorBase
                         parameter.IsOptional
                             ? $"{parameter.TypeName} {parameter.Name} = {parameter.DefaultValueLiteral}"
                             : $"{parameter.TypeName} {parameter.Name}"));
+
+                if (hasJetbrainsAnnotations)
+                    sb.AppendLine("    [global::JetBrains.Annotations.AspMvcActionAttribute]");
 
                 sb.AppendLine($"    public string {method.Name}({parameters})");
                 sb.AppendLine("    {");
@@ -138,6 +175,9 @@ public sealed class UrlHelperGenerator : ControllerGeneratorBase
         {
             var helperClassName = $"{controller.Name}UrlHelper";
             var propertyName = controller.Name.Replace("Controller", string.Empty);
+
+            if (hasJetbrainsAnnotations)
+                sb.AppendLine("        [global::JetBrains.Annotations.AspMvcControllerAttribute]");
 
             sb.AppendLine($"        public {helperClassName} {propertyName} => new {helperClassName}(url);");
             sb.AppendLine();

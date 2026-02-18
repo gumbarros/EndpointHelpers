@@ -1,0 +1,59 @@
+@model IReadOnlyList<EndpointHelpers.Sample.Models.Product>
+@{
+    ViewData["Title"] = "Products";
+    var category = (string)(ViewData["Category"] ?? "");
+    var featured = (bool)(ViewData["Featured"] ?? false);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Products</h1>
+    <div class="btn-group" role="group">
+        <a class="btn btn-outline-secondary" href="@Url.Products.Index()">All</a>
+        <a class="btn btn-outline-secondary" href="@Url.Products.Index(category: "Lighting")">Lighting</a>
+        <a class="btn btn-outline-secondary" href="@Url.Products.Index(category: "Furniture")">Furniture</a>
+        <a class="btn btn-outline-secondary" href="@Url.Products.Index(category: "Audio")">Audio</a>
+        <a class="btn btn-outline-secondary" href="@Url.Products.Index(category: "Accessories")">Accessories</a>
+        <a class="btn btn-outline-secondary @(featured ? "active" : "")" href="@Url.Products.Index(featured: true)">Featured</a>
+    </div>
+</div>
+
+<p class="text-muted mb-3">
+    Showing @(featured ? "featured " : "")@(!string.IsNullOrWhiteSpace(category) ? $"{category} " : "")products (@Model.Count).
+    <a href="@Url.Products.Grid()" class="ms-1">Card grid</a> ·
+    <a href="@Url.Products.Landing()" class="ms-1">Landing view</a>
+</p>
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th class="text-end">Price</th>
+            <th class="text-center">Rating</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var product in Model)
+        {
+            <tr>
+                <td>
+                    @if (product.Featured)
+                    {
+                        <span class="badge text-bg-primary me-1">Featured</span>
+                    }
+                    <a href="@Url.Products.Details(product.Id)" class="text-decoration-none">@product.Name</a>
+                    <div class="text-muted small">@product.Summary</div>
+                </td>
+                <td>@product.Category</td>
+                <td class="text-end">$@product.Price</td>
+                <td class="text-center">@product.Rating.ToString("0.0")</td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-primary" href="@Url.Products.Details(product.Id)">Details</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
