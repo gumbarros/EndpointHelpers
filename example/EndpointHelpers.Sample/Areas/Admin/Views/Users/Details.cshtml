@@ -1,0 +1,32 @@
+@model EndpointHelpers.Sample.Models.AdminUser
+
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<div class="mb-3">
+    <a class="btn btn-sm btn-outline-secondary" href="@Url.Admin.Users.Index()">Back to users</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h1 class="h4 mb-1">@Model.Name</h1>
+                <div class="text-muted">@Model.Email</div>
+            </div>
+            <span class="badge @(Model.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                @(Model.IsActive ? "Active" : "Inactive")
+            </span>
+        </div>
+
+        <hr/>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Role</dt>
+            <dd class="col-sm-9">@Model.Role</dd>
+            <dt class="col-sm-3">Area</dt>
+            <dd class="col-sm-9">Admin.Users</dd>
+        </dl>
+    </div>
+</div>

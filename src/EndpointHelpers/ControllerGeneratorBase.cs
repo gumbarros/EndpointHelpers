@@ -111,6 +111,8 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
                 ]))
             .ToImmutableArray();
 
+        var areaName = GetAreaName(typeSymbol) ?? GetAreaName(classDeclaration, context.SemanticModel);
+
         return new ControllerModel(
             GetMetadataName(typeSymbol),
             typeSymbol.ToDisplayString(),
@@ -118,6 +120,7 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
             typeSymbol.Name,
             GetAccessibilityKeyword(typeSymbol.DeclaredAccessibility),
             typeSymbol.IsSealed,
+            areaName,
             classHasGenerateAttribute,
             methods);
     }
@@ -184,6 +187,118 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
         }
 
         return false;
+    }
+
+    private static string? GetAreaName(ISymbol symbol)
+    {
+        foreach (var attribute in symbol.GetAttributes())
+        {
+            if (!IsAreaAttribute(attribute.AttributeClass))
+                continue;
+
+            if (TryGetAreaValue(attribute) is { } value &&
+                !string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsAreaAttribute(INamedTypeSymbol? attributeClass)
+    {
+        return attributeClass is
+        {
+            Name: "AreaAttribute",
+            ContainingNamespace: { }
+        } && attributeClass.ContainingNamespace.ToDisplayString() == "Microsoft.AspNetCore.Mvc";
+    }
+
+    private static string? TryGetAreaValue(AttributeData attribute)
+    {
+        if (attribute.ConstructorArguments.Length > 0 &&
+            attribute.ConstructorArguments[0].Value is string constructorValue)
+        {
+            return constructorValue;
+        }
+
+        foreach (var namedArgument in attribute.NamedArguments)
+        {
+            if (namedArgument.Key == "RouteValue" &&
+                namedArgument.Value.Value is string routeValue)
+            {
+                return routeValue;
+            }
+        }
+
+        return null;
+    }
+
+    private static string? GetAreaName(ClassDeclarationSyntax classDeclaration, SemanticModel semanticModel)
+    {
+        foreach (var attribute in classDeclaration.AttributeLists.SelectMany(static list => list.Attributes))
+        {
+            var symbol = semanticModel.GetSymbolInfo(attribute).Symbol as IMethodSymbol;
+            if (symbol is not null)
+            {
+                if (!IsAreaAttribute(symbol.ContainingType))
+                    continue;
+            }
+            else
+            {
+                var simpleName = GetAttributeSimpleName(attribute.Name);
+                if (simpleName is not ("Area" or "AreaAttribute"))
+                    continue;
+            }
+
+            var args = attribute.ArgumentList?.Arguments;
+            if (args is null || args.Value.Count == 0)
+                continue;
+
+            foreach (var argument in args.Value)
+            {
+                if (TryGetStringConstant(semanticModel, argument.Expression) is not { } value)
+                    continue;
+
+                if (argument.NameEquals is null &&
+                    argument.NameColon is null &&
+                    !string.IsNullOrWhiteSpace(value))
+                {
+                    return value;
+                }
+
+                if (argument.NameEquals?.Name.Identifier.ValueText == "RouteValue" &&
+                    !string.IsNullOrWhiteSpace(value))
+                {
+                    return value;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static string? GetAttributeSimpleName(NameSyntax nameSyntax)
+    {
+        return nameSyntax switch
+        {
+            IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
+            QualifiedNameSyntax qualified => qualified.Right.Identifier.ValueText,
+            AliasQualifiedNameSyntax aliasQualified => aliasQualified.Name.Identifier.ValueText,
+            _ => null
+        };
+    }
+
+    private static string? TryGetStringConstant(SemanticModel semanticModel, ExpressionSyntax expression)
+    {
+        if (semanticModel.GetConstantValue(expression) is { HasValue: true, Value: string value })
+            return value;
+
+        return expression is LiteralExpressionSyntax literal &&
+               literal.IsKind(SyntaxKind.StringLiteralExpression)
+            ? literal.Token.ValueText
+            : null;
     }
 
     private static string? GetOptionalDefaultLiteral(IParameterSymbol parameter)
@@ -253,6 +368,7 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
         string Name,
         string AccessibilityKeyword,
         bool IsSealed,
+        string? AreaName,
         bool ClassHasGenerateAttribute,
         ImmutableArray<ActionModel> Methods);
 

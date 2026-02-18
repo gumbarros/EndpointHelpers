@@ -16,28 +16,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2c504c9f-27e2-4065-9e4b-647bd2aaeae6" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/ProductsController.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Models/Product.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Products/Details.cshtml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Products/Grid.cshtml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Products/Index.cshtml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Products/Landing.cshtml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/EndpointHelpers/ViewGenerator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/ViewGeneratorTests.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Areas/Admin/Controllers/UsersController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Areas/Admin/Views/Users/Details.cshtml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Areas/Admin/Views/Users/Index.cshtml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Areas/Admin/Views/_ViewImports.cshtml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Areas/Admin/Views/_ViewStart.cshtml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Models/AdminUser.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.EndpointHelpers/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.EndpointHelpers/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EndpointHelpers.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/EndpointHelpers.sln.DotSettings.user" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AGENTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/AGENTS.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/OrdersController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Controllers/OrdersController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/EndpointHelpers.Sample.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/EndpointHelpers.Sample.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Home/Privacy.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Home/Privacy.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Program.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Shared/_Layout.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/example/EndpointHelpers.Sample/Views/Shared/_Layout.cshtml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/ControllerGeneratorBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/ControllerGeneratorBase.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/LinkGeneratorGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/LinkGeneratorGenerator.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/RedirectToActionGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/RedirectToActionGenerator.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/EndpointHelpers/UrlHelperGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/EndpointHelpers/UrlHelperGenerator.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/EndpointHelpers.Tests/EndpointHelpers.Tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/EndpointHelpers.Tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/EndpointHelpers.Tests/RedirectToActionGeneratorTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/RedirectToActionGeneratorTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/EndpointHelpers.Tests/LinkGeneratorGeneratorTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/LinkGeneratorGeneratorTests.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/EndpointHelpers.Tests/UrlHelperGeneratorTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/UrlHelperGeneratorTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/EndpointHelpers.Tests/ViewGeneratorTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/EndpointHelpers.Tests/ViewGeneratorTests.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -114,7 +109,7 @@
     "cf08f83a-9f7a-4be8-8c08-341d1ac42e25.executor": "Debug",
     "d74964df-8abf-4130-b992-0130f266c108.executor": "Debug",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/gumbarros/RiderProjects/EndpointHelpers/EndpointHelpers.slnx",
+    "last_opened_file_path": "/home/gumbarros/RiderProjects/EndpointHelpers/AGENTS.md",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -437,7 +432,23 @@
       <option name="project" value="LOCAL" />
       <updated>1770863269180</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="Add `GenerateViewHelpers` attribute and added IntelliSense support for JetBrains IDEs">
+      <option name="closed" value="true" />
+      <created>1771422850458</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1771422850458</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Add AGENTS.md">
+      <option name="closed" value="true" />
+      <created>1771423056846</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1771423056846</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -464,7 +475,9 @@
     <MESSAGE value="Update test dependencies" />
     <MESSAGE value="Remove unused using directives" />
     <MESSAGE value="bugfixes: Cover ignored parameters and struct defaults" />
-    <option name="LAST_COMMIT_MESSAGE" value="bugfixes: Cover ignored parameters and struct defaults" />
+    <MESSAGE value="Add `GenerateViewHelpers` attribute and added IntelliSense support for JetBrains IDEs" />
+    <MESSAGE value="Add AGENTS.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add AGENTS.md" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

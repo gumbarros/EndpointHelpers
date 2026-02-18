@@ -28,6 +28,7 @@ public sealed class ViewGeneratorTests
     private const string ControllerSource = """
 
                                             using Microsoft.AspNetCore.Mvc;
+                                            using Microsoft.AspNetCore.Mvc.Razor;
 
                                             namespace EndpointHelpers
                                             {
@@ -102,22 +103,30 @@ public sealed class ViewGeneratorTests
     [Fact]
     public void Applies_ModelType_Attribute_To_Model_Parameter()
     {
-        var generated = Run($"{JetBrainsAnnotationsSource}\n{ControllerSource}");
+        var generated = Run(ControllerSource, JetBrainsAnnotationsSource);
 
         Assert.Contains(
             "protected ViewResult IndexView([global::JetBrains.Annotations.AspMvcModelTypeAttribute] object? model)",
             generated);
     }
 
-    private static string Run(string? source = null)
+    private static string Run()
+        => Run(ControllerSource);
+
+    private static string Run(string source, params string[] additionalSources)
     {
         var generator = new ViewGenerator();
 
         var driver = CSharpGeneratorDriver.Create(generator);
 
+        var syntaxTrees = new[] { source }
+            .Concat(additionalSources)
+            .Select(static s => CSharpSyntaxTree.ParseText(s))
+            .ToArray();
+
         var compilation = CSharpCompilation.Create(
             "Test",
-            [CSharpSyntaxTree.ParseText(source ?? ControllerSource)],
+            syntaxTrees,
             [
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Controller).Assembly.Location),

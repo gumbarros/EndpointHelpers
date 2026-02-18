@@ -137,6 +137,7 @@ You can exclude methods using:
 - UrlHelper and LinkGenerator helpers are placed in the `EndpointHelpers` namespace.
 - Redirect helpers are generated as `partial` members in the controller namespace.
 - Extension properties use the controller name without the `Controller` suffix.
+- Controllers with `[Area("...")]` are grouped by area, so generated access becomes `Url.<Area>.<Controller>` and `Links.<Area>.<Controller>`.
 
 ### Controller and action discovery
 ```csharp
@@ -159,16 +160,19 @@ public partial class OrdersController : Controller
 
 Url.Orders.Index();
 Url.Orders.Details(orderId: 123, source: "dashboard");
+Url.Admin.Users.Index();
 
 // LinkGeneratorGenerator
 
 LinkGenerator.Orders.GetIndexPath();
 LinkGenerator.Orders.GetDetailsPath(123, "dashboard");
+LinkGenerator.Admin.Users.GetIndexPath();
 
 // RedirectToActionGenerator
 
-this.RedirectToIndex();
-this.RedirectToDetails(orderId: 123, source: "dashboard");
+RedirectToIndex();
+RedirectToDetails(orderId: 123, source: "dashboard");
+RedirectToUsers();
 ```
 
 ## Example Project

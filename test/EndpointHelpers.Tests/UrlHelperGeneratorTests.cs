@@ -19,10 +19,13 @@ public sealed class UrlHelperGeneratorTests
 
                                                           [System.AttributeUsage(System.AttributeTargets.Method | System.AttributeTargets.Property | System.AttributeTargets.Field | System.AttributeTargets.Parameter)]
                                                           public sealed class AspMvcViewAttribute : System.Attribute;
+
+                                                          [System.AttributeUsage(System.AttributeTargets.Property)]
+                                                          public sealed class AspMvcAreaAttribute : System.Attribute;
                                                       }
                                                       """;
 
-    private const string ControllerSource = """
+    private const string AreaControllerSource = """
 
                                             using Microsoft.AspNetCore.Mvc;
                                             using EndpointHelpers;
@@ -39,6 +42,20 @@ public sealed class UrlHelperGeneratorTests
                                                 public IActionResult Details(int id) => Ok();
                                             }
                                             """;
+
+    private const string NonAreaControllerSource = """
+
+                                                   using Microsoft.AspNetCore.Mvc;
+                                                   using EndpointHelpers;
+
+                                                   namespace Test;
+
+                                                   public class OrdersController : Controller
+                                                   {
+                                                       [GenerateUrlHelper]
+                                                       public IActionResult Index() => Ok();
+                                                   }
+                                                   """;
 
     private const string OptionalAndIgnoredParametersSource = """
 
@@ -107,8 +124,19 @@ public sealed class UrlHelperGeneratorTests
     {
         var generated = Run();
 
+        Assert.Contains("public sealed class AdminAreaUrlHelper(IUrlHelper url)", generated);
         Assert.Contains("public HomeControllerUrlHelper Home", generated);
+        Assert.Contains("public AdminAreaUrlHelper Admin", generated);
         Assert.Contains("=> new HomeControllerUrlHelper(url);", generated);
+    }
+
+    [Fact]
+    public void Keeps_Controller_At_Root_When_No_Area()
+    {
+        var generated = Run(NonAreaControllerSource);
+
+        Assert.Contains("public OrdersControllerUrlHelper Orders", generated);
+        Assert.DoesNotContain("OrdersAreaUrlHelper", generated);
     }
 
     [Fact]
@@ -119,19 +147,29 @@ public sealed class UrlHelperGeneratorTests
         Assert.Contains("url.Action", generated);
         Assert.Contains("Index", generated);
         Assert.Contains("Home", generated);
+        Assert.Contains("{ \"area\", \"Admin\" }", generated);
     }
 
     [Fact]
     public void Applies_AspMvc_Annotations_When_JetBrains_Is_Available()
     {
-        var generated = Run(ControllerSource, JetBrainsAnnotationsSource);
+        var generated = Run(AreaControllerSource, JetBrainsAnnotationsSource);
 
         Assert.Contains("[global::JetBrains.Annotations.AspMvcActionAttribute]", generated);
         Assert.Contains("[global::JetBrains.Annotations.AspMvcControllerAttribute]", generated);
     }
 
+    [Fact]
+    public void Applies_AspMvcArea_Attribute_To_Area_Properties()
+    {
+        var generated = Run(AreaControllerSource, JetBrainsAnnotationsSource);
+
+        Assert.Contains("[global::JetBrains.Annotations.AspMvcAreaAttribute]", generated);
+        Assert.Contains("public AdminAreaUrlHelper Admin => new AdminAreaUrlHelper(url);", generated);
+    }
+
     private static string Run()
-        => Run(ControllerSource);
+        => Run(AreaControllerSource);
 
     private static string Run(string source, params string[] additionalSources)
     {

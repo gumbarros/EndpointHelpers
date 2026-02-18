@@ -1,0 +1,65 @@
+@model IReadOnlyList<EndpointHelpers.Sample.Models.AdminUser>
+
+@{
+    ViewData["Title"] = "Admin Users";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Admin Users</h1>
+        <div class="text-muted">Area: Admin.Users</div>
+    </div>
+    <a class="btn btn-outline-primary" href="@Url.Admin.Users.Index(role: "Administrator", active: true)">Admins only</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h6">Filters</h2>
+                <div class="small text-muted mb-2">Role: @ViewData["Role"], Active: @ViewData["Active"]</div>
+                <div class="d-grid gap-2">
+                    <a class="btn btn-sm btn-outline-secondary" href="@Url.Admin.Users.Index()">All users</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="@Url.Admin.Users.Index(active: true)">Active only</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="@Url.Admin.Users.Index(active: false)">Inactive only</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@user.Name</div>
+                                <div class="small text-muted">@user.Email</div>
+                            </td>
+                            <td>@user.Role</td>
+                            <td>
+                                <span class="badge @(user.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                    @(user.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" href="@Url.Admin.Users.Details(user.Id)">View</a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

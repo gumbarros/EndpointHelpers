@@ -45,5 +45,5 @@ Guidance for coding agents working in this repository.
 
 - Do not edit `bin/` or `obj/` outputs.
 - Keep changes minimal and targeted to the requested behavior.
-- If generator surface changes, update tests in the same change.
+- If generator surface changes, update tests and sample project in the same change
 - If public behavior or setup changes, update `README.md`.

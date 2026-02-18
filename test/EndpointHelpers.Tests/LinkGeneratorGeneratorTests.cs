@@ -34,6 +34,29 @@ public sealed class LinkGeneratorGeneratorTests
                                             }
                                             """;
 
+    private const string AreaControllerSource = """
+
+                                                using Microsoft.AspNetCore.Mvc;
+
+                                                namespace EndpointHelpers
+                                                {
+                                                    [System.AttributeUsage(System.AttributeTargets.Method | System.AttributeTargets.Class | System.AttributeTargets.Assembly)]
+                                                    public sealed class GenerateLinkGeneratorAttribute : System.Attribute;
+                                                }
+
+                                                namespace Test
+                                                {
+                                                    using EndpointHelpers;
+
+                                                    [Area("Admin")]
+                                                    public class UsersController : Controller
+                                                    {
+                                                        [GenerateLinkGenerator]
+                                                        public IActionResult Index(int id) => Ok();
+                                                    }
+                                                }
+                                                """;
+
     [Fact]
     public void Generates_Controller_Helper_Class()
     {
@@ -69,7 +92,28 @@ public sealed class LinkGeneratorGeneratorTests
         Assert.Contains("controller: \"Home\"", generated);
     }
 
+    [Fact]
+    public void Generates_Area_Nested_Extensions()
+    {
+        var generated = Run(AreaControllerSource);
+
+        Assert.Contains("public sealed class AdminAreaLinkGenerator(LinkGenerator linkGenerator)", generated);
+        Assert.Contains("public UsersControllerLinkGenerator Users", generated);
+        Assert.Contains("public AdminAreaLinkGenerator Admin", generated);
+    }
+
+    [Fact]
+    public void Includes_Area_In_LinkGenerator_Values()
+    {
+        var generated = Run(AreaControllerSource);
+
+        Assert.Contains("area = \"Admin\"", generated);
+    }
+
     private static string Run()
+        => Run(ControllerSource);
+
+    private static string Run(string source)
     {
         var generator = new LinkGeneratorGenerator();
 
@@ -77,10 +121,11 @@ public sealed class LinkGeneratorGeneratorTests
 
         var compilation = CSharpCompilation.Create(
             "Test",
-            [CSharpSyntaxTree.ParseText(ControllerSource)],
+            [CSharpSyntaxTree.ParseText(source)],
             [
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Controller).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(AreaAttribute).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(LinkGenerator).Assembly.Location)
             ]);
 
