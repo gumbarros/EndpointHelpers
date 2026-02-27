@@ -87,7 +87,7 @@ public sealed class UrlHelperGeneratorTests
     {
         var generated = Run();
 
-        Assert.Contains("public sealed class HomeControllerUrlHelper(IUrlHelper url)", generated);
+        Assert.Contains("public sealed class AdminAreaHomeControllerUrlHelper(IUrlHelper url)", generated);
     }
 
     [Fact]
@@ -125,9 +125,9 @@ public sealed class UrlHelperGeneratorTests
         var generated = Run();
 
         Assert.Contains("public sealed class AdminAreaUrlHelper(IUrlHelper url)", generated);
-        Assert.Contains("public HomeControllerUrlHelper Home", generated);
+        Assert.Contains("public AdminAreaHomeControllerUrlHelper Home", generated);
         Assert.Contains("public AdminAreaUrlHelper Admin", generated);
-        Assert.Contains("=> new HomeControllerUrlHelper(url);", generated);
+        Assert.Contains("=> new AdminAreaHomeControllerUrlHelper(url);", generated);
     }
 
     [Fact]

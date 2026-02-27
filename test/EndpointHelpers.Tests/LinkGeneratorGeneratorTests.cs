@@ -98,8 +98,9 @@ public sealed class LinkGeneratorGeneratorTests
         var generated = Run(AreaControllerSource);
 
         Assert.Contains("public sealed class AdminAreaLinkGenerator(LinkGenerator linkGenerator)", generated);
-        Assert.Contains("public UsersControllerLinkGenerator Users", generated);
+        Assert.Contains("public AdminAreaUsersControllerLinkGenerator Users", generated);
         Assert.Contains("public AdminAreaLinkGenerator Admin", generated);
+        Assert.Contains("=> new AdminAreaUsersControllerLinkGenerator(linkGenerator);", generated);
     }
 
     [Fact]

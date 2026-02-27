@@ -133,7 +133,9 @@ public sealed class UrlHelperGenerator : ControllerGeneratorBase
         foreach (var controller in selectedControllers)
         {
             var controllerName = controller.Name.Replace("Controller", string.Empty);
-            var helperClassName = $"{controller.Name}UrlHelper";
+            var helperClassName = controller.AreaName is { Length: > 0 }
+                ? $"{controller.AreaName}Area{controller.Name}UrlHelper"
+                : $"{controller.Name}UrlHelper";
 
             sb.AppendLine($"public sealed class {helperClassName}(IUrlHelper url)");
             sb.AppendLine("{");
@@ -193,7 +195,7 @@ public sealed class UrlHelperGenerator : ControllerGeneratorBase
 
             foreach (var controller in areaGroup.OrderBy(static controller => controller.MetadataName, StringComparer.Ordinal))
             {
-                var helperClassName = $"{controller.Name}UrlHelper";
+                var helperClassName = $"{areaIdentifier}Area{controller.Name}UrlHelper";
                 var propertyName = controller.Name.Replace("Controller", string.Empty);
 
                 if (hasJetbrainsAnnotations)

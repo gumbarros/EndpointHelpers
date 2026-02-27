@@ -43,7 +43,9 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
         foreach (var controller in selectedControllers)
         {
             var controllerName = controller.Name.Replace("Controller", string.Empty);
-            var helperClassName = $"{controller.Name}LinkGenerator";
+            var helperClassName = controller.AreaName is { Length: > 0 }
+                ? $"{controller.AreaName}Area{controller.Name}LinkGenerator"
+                : $"{controller.Name}LinkGenerator";
 
             sb.AppendLine($"public sealed class {helperClassName}(LinkGenerator linkGenerator)");
             sb.AppendLine("{");
@@ -124,7 +126,7 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
 
             foreach (var controller in areaGroup.OrderBy(static controller => controller.MetadataName, StringComparer.Ordinal))
             {
-                var helperClassName = $"{controller.Name}LinkGenerator";
+                var helperClassName = $"{areaIdentifier}Area{controller.Name}LinkGenerator";
                 var propertyName = controller.Name.Replace("Controller", string.Empty);
 
                 sb.AppendLine($"    public {helperClassName} {propertyName} => new {helperClassName}(linkGenerator);");
