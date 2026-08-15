@@ -29,11 +29,25 @@
         <FileVersion>$(Version)</FileVersion>
 
         <Copyright>Copyright © gumbarros 2026</Copyright>
+
+        <NoWarn>$(NoWarn);NU5128</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
         <!-- Package the generator in the analyzer directory of the nuget package -->
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Attribute definitions emitted at post-initialization, shipped as embedded resources. -->
+        <Compile Remove="UrlHelperAttributes.g.cs" />
+        <Compile Remove="LinkGeneratorAttributes.g.cs" />
+        <Compile Remove="RedirectToActionAttributes.g.cs" />
+        <Compile Remove="ViewHelpersAttributes.g.cs" />
+        <EmbeddedResource Include="UrlHelperAttributes.g.cs" LogicalName="EndpointHelpers.UrlHelperAttributes.g.cs" />
+        <EmbeddedResource Include="LinkGeneratorAttributes.g.cs" LogicalName="EndpointHelpers.LinkGeneratorAttributes.g.cs" />
+        <EmbeddedResource Include="RedirectToActionAttributes.g.cs" LogicalName="EndpointHelpers.RedirectToActionAttributes.g.cs" />
+        <EmbeddedResource Include="ViewHelpersAttributes.g.cs" LogicalName="EndpointHelpers.ViewHelpersAttributes.g.cs" />
     </ItemGroup>
 
     <ItemGroup>
@@ -45,8 +59,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0"/>
     </ItemGroup>
 
     <ItemGroup>

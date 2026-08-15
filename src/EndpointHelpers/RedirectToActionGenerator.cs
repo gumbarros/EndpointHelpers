@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using EndpointHelpers.Helpers;
+using EndpointHelpers.Models;
 using Microsoft.CodeAnalysis;
 
 namespace EndpointHelpers;
@@ -11,12 +14,25 @@ public sealed class RedirectToActionGenerator : ControllerGeneratorBase
 {
     protected override string GenerateAttributeName => "GenerateRedirectToActionAttribute";
     protected override string IgnoreAttributeName => "RedirectToActionIgnoreAttribute";
-    protected override string OutputFileName => "RedirectToActionControllers.g.cs";
+    protected override string AttributeFileName => "RedirectToActionAttributes.g.cs";
+    protected override string AttributeResourceName => "EndpointHelpers.RedirectToActionAttributes.g.cs";
     protected override bool SupportsAssemblyGenerateAttribute => false;
 
-    protected override string BuildSource(
-        IReadOnlyList<ControllerModel> selectedControllers,
+    protected override IEnumerable<GeneratedFile> BuildSources(
+        ImmutableArray<ControllerModel> selectedControllers,
         bool hasJetbrainsAnnotations = false)
+    {
+        foreach (var group in selectedControllers
+                     .GroupBy(static controller => controller.NamespaceName ?? string.Empty)
+                     .OrderBy(static group => group.Key, StringComparer.Ordinal))
+        {
+            yield return new GeneratedFile(
+                GetNamespaceFileName("RedirectToActionControllers.g.cs", group.Key),
+                BuildSource(group.Key, group));
+        }
+    }
+
+    private static string BuildSource(string namespaceName, IEnumerable<ControllerModel> controllers)
     {
         var sb = new StringBuilder();
 
@@ -27,73 +43,61 @@ public sealed class RedirectToActionGenerator : ControllerGeneratorBase
         sb.AppendLine("using Microsoft.AspNetCore.Routing;");
         sb.AppendLine();
 
-        var namespaces = selectedControllers
-            .GroupBy(static controller => controller.NamespaceName ?? string.Empty)
-            .OrderBy(static group => group.Key, StringComparer.Ordinal);
-
-        foreach (var group in namespaces)
+        if (!string.IsNullOrEmpty(namespaceName))
         {
-            var hasNamespace = !string.IsNullOrEmpty(group.Key);
-            var indent = hasNamespace ? "    " : string.Empty;
+            sb.AppendLine($"namespace {namespaceName};");
+            sb.AppendLine();
+        }
 
-            if (hasNamespace)
+        foreach (var controller in controllers)
+        {
+            var controllerName = IdentifierHelpers.TrimControllerSuffix(controller.Name);
+            var hasArea = !string.IsNullOrWhiteSpace(controller.AreaName);
+            var methodAccess = controller.IsSealed ? "private" : "protected";
+
+            sb.AppendLine($"{controller.AccessibilityKeyword} partial class {controller.Name}");
+            sb.AppendLine("{");
+
+            foreach (var method in controller.Methods)
             {
-                sb.AppendLine($"namespace {group.Key}");
-                sb.AppendLine("{");
-            }
+                var actionMethodName = $"RedirectTo{method.Name}";
+                var parameters = string.Join(
+                    ", ",
+                    method.Parameters.Select(static parameter =>
+                        parameter.IsOptional
+                            ? $"{parameter.TypeName} {parameter.Name} = {parameter.DefaultValueLiteral}"
+                            : $"{parameter.TypeName} {parameter.Name}"));
 
-            foreach (var controller in group)
-            {
-                var controllerName = controller.Name.Replace("Controller", string.Empty);
-                var methodAccess = controller.IsSealed ? "private" : "protected";
+                sb.AppendLine($"    {methodAccess} RedirectToActionResult {actionMethodName}({parameters})");
+                sb.AppendLine("    {");
 
-                sb.AppendLine($"{indent}{controller.AccessibilityKeyword} partial class {controller.Name}");
-                sb.AppendLine($"{indent}{{");
-
-                foreach (var method in controller.Methods)
+                if (method.Parameters.Length == 0 && !hasArea)
                 {
-                    var actionMethodName = $"RedirectTo{method.Name}";
-                    var parameters = string.Join(
-                        ", ",
-                        method.Parameters.Select(static parameter =>
-                            parameter.IsOptional
-                                ? $"{parameter.TypeName} {parameter.Name} = {parameter.DefaultValueLiteral}"
-                                : $"{parameter.TypeName} {parameter.Name}"));
+                    sb.AppendLine($"        return RedirectToAction(\"{method.Name}\", \"{controllerName}\")!;");
+                }
+                else
+                {
+                    sb.AppendLine("        return RedirectToAction(");
+                    sb.AppendLine($"            \"{method.Name}\",");
+                    sb.AppendLine($"            \"{controllerName}\",");
+                    sb.AppendLine("            new RouteValueDictionary");
+                    sb.AppendLine("            {");
 
-                    sb.AppendLine($"{indent}    {methodAccess} RedirectToActionResult {actionMethodName}({parameters})");
-                    sb.AppendLine($"{indent}    {{");
+                    if (hasArea)
+                        sb.AppendLine($"                {{ \"Area\", \"{IdentifierHelpers.EscapeStringLiteral(controller.AreaName!)}\" }},");
 
-                    if (method.Parameters.Length == 0)
-                    {
-                        sb.AppendLine($"{indent}        return RedirectToAction(\"{method.Name}\", \"{controllerName}\")!;");
-                    }
-                    else
-                    {
-                        sb.AppendLine($"{indent}        return RedirectToAction(");
-                        sb.AppendLine($"{indent}            \"{method.Name}\",");
-                        sb.AppendLine($"{indent}            \"{controllerName}\",");
-                        sb.AppendLine($"{indent}            new RouteValueDictionary");
-                        sb.AppendLine($"{indent}            {{");
+                    foreach (var parameter in method.Parameters)
+                        sb.AppendLine($"                {{ \"{parameter.Name}\", {parameter.Name} }},");
 
-                        foreach (var parameter in method.Parameters)
-                            sb.AppendLine($"{indent}                {{ \"{parameter.Name}\", {parameter.Name} }},");
-
-                        sb.AppendLine(indent + "            })!;");
-                    }
-
-                    sb.AppendLine(indent + "    }");
-                    sb.AppendLine();
+                    sb.AppendLine("            })!;");
                 }
 
-                sb.AppendLine(indent + "}");
+                sb.AppendLine("    }");
                 sb.AppendLine();
             }
 
-            if (hasNamespace)
-            {
-                sb.AppendLine("}");
-                sb.AppendLine();
-            }
+            sb.AppendLine("}");
+            sb.AppendLine();
         }
 
         return sb.ToString();

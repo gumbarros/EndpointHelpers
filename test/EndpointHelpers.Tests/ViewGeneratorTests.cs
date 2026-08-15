@@ -139,7 +139,7 @@ public sealed class ViewGeneratorTests
         var result = driver.RunGenerators(compilation).GetRunResult();
 
         return result.GeneratedTrees
-            .Single(tree => tree.FilePath.EndsWith("ViewHelpers.g.cs"))
+            .Single(tree => tree.FilePath.Contains("ViewHelpers") && !tree.FilePath.Contains("Attributes"))
             .GetText()
             .ToString();
     }

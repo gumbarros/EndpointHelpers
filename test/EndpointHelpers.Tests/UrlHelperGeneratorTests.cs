@@ -57,6 +57,45 @@ public sealed class UrlHelperGeneratorTests
                                                    }
                                                    """;
 
+    private const string NamespaceCollisionSource = """
+
+                                                    using Microsoft.AspNetCore.Mvc;
+                                                    using EndpointHelpers;
+
+                                                    namespace A
+                                                    {
+                                                        public class HomeController : Controller
+                                                        {
+                                                            [GenerateUrlHelper]
+                                                            public IActionResult Index() => Ok();
+                                                        }
+                                                    }
+
+                                                    namespace B
+                                                    {
+                                                        public class HomeController : Controller
+                                                        {
+                                                            [GenerateUrlHelper]
+                                                            public IActionResult Index() => Ok();
+                                                        }
+                                                    }
+                                                    """;
+
+    private const string InvalidAreaSource = """
+
+                                             using Microsoft.AspNetCore.Mvc;
+                                             using EndpointHelpers;
+
+                                             namespace Test;
+
+                                             [Area("My-Admin")]
+                                             public class UsersController : Controller
+                                             {
+                                                 [GenerateUrlHelper]
+                                                 public IActionResult Index() => Ok();
+                                             }
+                                             """;
+
     private const string OptionalAndIgnoredParametersSource = """
 
                                                               using System.Runtime.InteropServices;
@@ -66,9 +105,9 @@ public sealed class UrlHelperGeneratorTests
 
                                                               namespace Test;
 
-                                                              public struct WidgetId
+                                                              public class OrderModel
                                                               {
-                                                                  public int Value { get; set; }
+                                                                  public int Id { get; set; }
                                                               }
 
                                                               public class HomeController : Controller
@@ -78,7 +117,8 @@ public sealed class UrlHelperGeneratorTests
                                                                       int id,
                                                                       [FromServices] object service,
                                                                       CancellationToken cancellationToken,
-                                                                      [Optional] WidgetId widgetId) => Ok();
+                                                                      [Optional] decimal amount,
+                                                                      OrderModel order) => Ok();
                                                               }
                                                               """;
 
@@ -103,7 +143,7 @@ public sealed class UrlHelperGeneratorTests
     {
         var generated = Run(OptionalAndIgnoredParametersSource);
 
-        Assert.Contains("public string Index(int id, Test.WidgetId widgetId = default)", generated);
+        Assert.Contains("public string Index(int id, decimal amount = default)", generated);
         Assert.DoesNotContain("CancellationToken", generated);
         Assert.DoesNotContain("FromServices", generated);
         Assert.DoesNotContain("\"service\"", generated);
@@ -111,12 +151,21 @@ public sealed class UrlHelperGeneratorTests
     }
 
     [Fact]
-    public void Uses_Default_For_Optional_Struct_Without_Explicit_Default()
+    public void Excludes_Complex_Type_Parameters()
     {
         var generated = Run(OptionalAndIgnoredParametersSource);
 
-        Assert.Contains("Test.WidgetId widgetId = default", generated);
-        Assert.DoesNotContain("Test.WidgetId widgetId = null", generated);
+        Assert.DoesNotContain("OrderModel", generated);
+        Assert.DoesNotContain("\"order\"", generated);
+    }
+
+    [Fact]
+    public void Uses_Default_For_Optional_Value_Type_Without_Explicit_Default()
+    {
+        var generated = Run(OptionalAndIgnoredParametersSource);
+
+        Assert.Contains("decimal amount = default", generated);
+        Assert.DoesNotContain("decimal amount = null", generated);
     }
 
     [Fact]
@@ -166,6 +215,29 @@ public sealed class UrlHelperGeneratorTests
 
         Assert.Contains("[global::JetBrains.Annotations.AspMvcAreaAttribute]", generated);
         Assert.Contains("public AdminAreaUrlHelper Admin => new AdminAreaUrlHelper(url);", generated);
+    }
+
+    [Fact]
+    public void Disambiguates_Controllers_With_Same_Name_In_Different_Namespaces()
+    {
+        var generated = Run(NamespaceCollisionSource);
+
+        Assert.Contains("public sealed class A_HomeControllerUrlHelper(IUrlHelper url)", generated);
+        Assert.Contains("public sealed class B_HomeControllerUrlHelper(IUrlHelper url)", generated);
+        Assert.Contains("public A_HomeControllerUrlHelper A_Home", generated);
+        Assert.Contains("public B_HomeControllerUrlHelper B_Home", generated);
+        Assert.DoesNotContain("public sealed class HomeControllerUrlHelper", generated);
+    }
+
+    [Fact]
+    public void Sanitizes_Area_Name_In_Helper_Class_Names()
+    {
+        var generated = Run(InvalidAreaSource);
+
+        Assert.Contains("public sealed class My_AdminAreaUsersControllerUrlHelper(IUrlHelper url)", generated);
+        Assert.Contains("public sealed class My_AdminAreaUrlHelper(IUrlHelper url)", generated);
+        Assert.Contains("public My_AdminAreaUrlHelper My_Admin", generated);
+        Assert.Contains("{ \"Area\", \"My-Admin\" }", generated);
     }
 
     private static string Run()

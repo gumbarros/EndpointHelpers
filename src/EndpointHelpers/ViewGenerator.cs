@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using EndpointHelpers.Helpers;
+using EndpointHelpers.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
@@ -13,7 +15,8 @@ public sealed class ViewGenerator : ControllerGeneratorBase
 {
     protected override string GenerateAttributeName => "GenerateViewHelpersAttribute";
     protected override string IgnoreAttributeName => "ViewHelpersIgnoreAttribute";
-    protected override string OutputFileName => "ViewHelpers.g.cs";
+    protected override string AttributeFileName => "ViewHelpersAttributes.g.cs";
+    protected override string AttributeResourceName => "EndpointHelpers.ViewHelpersAttributes.g.cs";
     protected override bool SupportsAssemblyGenerateAttribute => false;
 
     protected override void RegisterSourceOutput(
@@ -51,21 +54,21 @@ public sealed class ViewGenerator : ControllerGeneratorBase
                     .Where(static c => c.ClassHasGenerateAttribute)
                     .Select(controller =>
                     {
-                        var controllerKey = TrimControllerSuffix(controller.Name);
+                        var controllerKey = IdentifierHelpers.TrimControllerSuffix(controller.Name);
                         var views = viewsByController.TryGetValue(controllerKey, out var found)
                             ? found
                             : ImmutableArray<string>.Empty;
 
-                        return controller with
-                        {
-                            Methods = [
-                                ..views
-                                    .Select(viewName => new ActionModel(
-                                        viewName,
-                                        HasGenerateAttribute: false,
-                                        Parameters: ImmutableArray<ParameterModel>.Empty))
-                            ]
-                        };
+                        ImmutableArray<ActionModel> methods = [
+                            ..views
+                                .Select(viewName => new ActionModel
+                                {
+                                    Name = viewName,
+                                    HasGenerateAttribute = false,
+                                    Parameters = ImmutableArray<ParameterModel>.Empty
+                                })
+                        ];
+                        return controller with { Methods = methods };
                     })
                     .Where(static c => c.Methods.Length > 0)
                     .ToImmutableArray();
@@ -73,15 +76,29 @@ public sealed class ViewGenerator : ControllerGeneratorBase
                 if (selected.Length == 0)
                     return;
 
-                ctx.AddSource(
-                    OutputFileName,
-                    SourceText.From(BuildSource(selected, hasJetbrains), Encoding.UTF8));
+                foreach (var file in BuildSources(selected, hasJetbrains))
+                    ctx.AddSource(file.FileName, SourceText.From(file.Content, Encoding.UTF8));
             });
     }
 
-    protected override string BuildSource(
-        IReadOnlyList<ControllerModel> selectedControllers,
+    protected override IEnumerable<GeneratedFile> BuildSources(
+        ImmutableArray<ControllerModel> selectedControllers,
         bool hasJetbrainsAnnotations = false)
+    {
+        foreach (var group in selectedControllers
+                     .GroupBy(static controller => controller.NamespaceName ?? string.Empty)
+                     .OrderBy(static group => group.Key, StringComparer.Ordinal))
+        {
+            yield return new GeneratedFile(
+                GetNamespaceFileName("ViewHelpers.g.cs", group.Key),
+                BuildSource(group.Key, group, hasJetbrainsAnnotations));
+        }
+    }
+
+    private static string BuildSource(
+        string namespaceName,
+        IEnumerable<ControllerModel> controllers,
+        bool hasJetbrainsAnnotations)
     {
         var sb = new StringBuilder();
 
@@ -91,71 +108,55 @@ public sealed class ViewGenerator : ControllerGeneratorBase
         sb.AppendLine("using Microsoft.AspNetCore.Mvc;");
         sb.AppendLine();
 
-        var namespaces = selectedControllers
-            .GroupBy(static controller => controller.NamespaceName ?? string.Empty)
-            .OrderBy(static group => group.Key, System.StringComparer.Ordinal);
-
-        foreach (var group in namespaces)
+        if (!string.IsNullOrEmpty(namespaceName))
         {
-            var hasNamespace = !string.IsNullOrEmpty(group.Key);
-            var indent = hasNamespace ? "    " : string.Empty;
+            sb.AppendLine($"namespace {namespaceName};");
+            sb.AppendLine();
+        }
 
-            if (hasNamespace)
+        foreach (var controller in controllers)
+        {
+            sb.AppendLine($"{controller.AccessibilityKeyword} partial class {controller.Name}");
+            sb.AppendLine("{");
+
+            var methodAccess = controller.IsSealed ? "private" : "protected";
+
+            foreach (var method in controller.Methods)
             {
-                sb.AppendLine($"namespace {group.Key}");
-                sb.AppendLine("{");
-            }
+                var methodName = $"{method.Name}View";
 
-            foreach (var controller in group)
-            {
-                sb.AppendLine($"{indent}{controller.AccessibilityKeyword} partial class {controller.Name}");
-                sb.AppendLine($"{indent}{{");
+                if (hasJetbrainsAnnotations)
+                    sb.AppendLine("    [global::JetBrains.Annotations.AspMvcViewAttribute]");
 
-                var methodAccess = controller.IsSealed ? "private" : "protected";
+                sb.AppendLine($"    {methodAccess} ViewResult {methodName}()");
+                sb.AppendLine("    {");
+                sb.AppendLine("        return new ViewResult");
+                sb.AppendLine("        {");
+                sb.AppendLine($"            ViewName = \"{method.Name}\",");
+                sb.AppendLine("            ViewData = ViewData,");
+                sb.AppendLine("            TempData = TempData");
+                sb.AppendLine("        };");
+                sb.AppendLine("    }");
+                sb.AppendLine();
 
-                foreach (var method in controller.Methods)
-                {
-                    var methodName = $"{method.Name}View";
-
-                    if (hasJetbrainsAnnotations)
-                        sb.AppendLine($"{indent}    [global::JetBrains.Annotations.AspMvcViewAttribute]");
-
-                    sb.AppendLine($"{indent}    {methodAccess} ViewResult {methodName}()");
-                    sb.AppendLine($"{indent}    {{");
-                    sb.AppendLine($"{indent}        return new ViewResult");
-                    sb.AppendLine($"{indent}        {{");
-                    sb.AppendLine($"{indent}            ViewName = \"{method.Name}\",");
-                    sb.AppendLine($"{indent}            ViewData = ViewData,");
-                    sb.AppendLine($"{indent}            TempData = TempData");
-                    sb.AppendLine($"{indent}        }};");
-                    sb.AppendLine($"{indent}    }}");
-                    sb.AppendLine();
-
-                    if (hasJetbrainsAnnotations)
-                        sb.AppendLine($"{indent}    [global::JetBrains.Annotations.AspMvcViewAttribute]");
-                    sb.AppendLine(
-                        $"{indent}    {methodAccess} ViewResult {methodName}({(hasJetbrainsAnnotations ? "[global::JetBrains.Annotations.AspMvcModelTypeAttribute] " : string.Empty)}object? model)");
-                    sb.AppendLine($"{indent}    {{");
-                    sb.AppendLine($"{indent}        ViewData.Model = model;");
-                    sb.AppendLine($"{indent}        return new ViewResult");
-                    sb.AppendLine($"{indent}        {{");
-                    sb.AppendLine($"{indent}            ViewName = \"{method.Name}\",");
-                    sb.AppendLine($"{indent}            ViewData = ViewData,");
-                    sb.AppendLine($"{indent}            TempData = TempData");
-                    sb.AppendLine($"{indent}        }};");
-                    sb.AppendLine($"{indent}    }}");
-                    sb.AppendLine();
-                }
-
-                sb.AppendLine($"{indent}}}");
+                if (hasJetbrainsAnnotations)
+                    sb.AppendLine("    [global::JetBrains.Annotations.AspMvcViewAttribute]");
+                sb.AppendLine(
+                    $"    {methodAccess} ViewResult {methodName}({(hasJetbrainsAnnotations ? "[global::JetBrains.Annotations.AspMvcModelTypeAttribute] " : string.Empty)}object? model)");
+                sb.AppendLine("    {");
+                sb.AppendLine("        ViewData.Model = model;");
+                sb.AppendLine("        return new ViewResult");
+                sb.AppendLine("        {");
+                sb.AppendLine($"            ViewName = \"{method.Name}\",");
+                sb.AppendLine("            ViewData = ViewData,");
+                sb.AppendLine("            TempData = TempData");
+                sb.AppendLine("        };");
+                sb.AppendLine("    }");
                 sb.AppendLine();
             }
 
-            if (hasNamespace)
-            {
-                sb.AppendLine("}");
-                sb.AppendLine();
-            }
+            sb.AppendLine("}");
+            sb.AppendLine();
         }
 
         return sb.ToString();
@@ -168,33 +169,22 @@ public sealed class ViewGenerator : ControllerGeneratorBase
         var builder = ImmutableDictionary.CreateBuilder<string, ImmutableArray<string>>(StringComparer.OrdinalIgnoreCase);
         var temp = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
 
-        var assemblies = new List<IAssemblySymbol> { compilation.Assembly };
-        assemblies.AddRange(compilation.SourceModule.ReferencedAssemblySymbols);
+        // The app's own Razor view types are consolidated into the primary assembly,
+        // but their namespace may be customized, so enumerate it fully.
+        foreach (var type in EnumerateTypes(compilation.Assembly.GlobalNamespace))
+            AddRazorView(temp, type);
 
-        foreach (var assembly in assemblies)
+        // Referenced assemblies (e.g. Razor Class Libraries) place their views under
+        // the conventional "AspNetCore" namespace; avoid walking their entire type universe.
+        foreach (var assembly in compilation.SourceModule.ReferencedAssemblySymbols)
         {
-            foreach (var type in EnumerateTypes(assembly.GlobalNamespace))
+            foreach (var ns in assembly.GlobalNamespace.GetNamespaceMembers())
             {
-                if (!IsRazorPage(type))
+                if (ns.Name != "AspNetCore")
                     continue;
 
-                var tokens = type.Name.Split('_');
-                if (tokens.Length < 2)
-                    continue;
-
-                var controller = tokens[^2];
-                var view = tokens[^1];
-
-                if (controller.Equals("Shared", StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                if (!temp.TryGetValue(controller, out var set))
-                {
-                    set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    temp[controller] = set;
-                }
-
-                set.Add(view);
+                foreach (var type in EnumerateTypes(ns))
+                    AddRazorView(temp, type);
             }
         }
 
@@ -222,6 +212,30 @@ public sealed class ViewGenerator : ControllerGeneratorBase
         return builder.ToImmutable();
     }
 
+    private static void AddRazorView(Dictionary<string, HashSet<string>> views, INamedTypeSymbol type)
+    {
+        if (!IsRazorPage(type))
+            return;
+
+        var tokens = type.Name.Split('_');
+        if (tokens.Length < 2)
+            return;
+
+        var controller = tokens[^2];
+        var view = tokens[^1];
+
+        if (controller.Equals("Shared", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        if (!views.TryGetValue(controller, out var set))
+        {
+            set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            views[controller] = set;
+        }
+
+        set.Add(view);
+    }
+
     private static IEnumerable<INamedTypeSymbol> EnumerateTypes(INamespaceSymbol ns)
     {
         foreach (var type in ns.GetTypeMembers())
@@ -243,7 +257,12 @@ public sealed class ViewGenerator : ControllerGeneratorBase
     {
         var segments = path.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
         var viewsIndex = Array.IndexOf(segments, "Views");
-        if (viewsIndex < 0 || viewsIndex + 2 >= segments.Length)
+        if (viewsIndex < 0)
+            return null;
+
+        // Expect exactly Views/{controller}/{view}.cshtml. Nested subfolders (partials,
+        // display templates, etc.) and views directly under Views/ are not action views.
+        if (viewsIndex + 3 != segments.Length)
             return null;
 
         var controller = segments[viewsIndex + 1];
@@ -283,12 +302,5 @@ public sealed class ViewGenerator : ControllerGeneratorBase
         }
 
         return false;
-    }
-
-    private static string TrimControllerSuffix(string name)
-    {
-        return name.EndsWith("Controller", StringComparison.Ordinal)
-            ? name[..^"Controller".Length]
-            : name;
     }
 }

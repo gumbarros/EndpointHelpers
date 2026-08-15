@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Text;
+using EndpointHelpers.Helpers;
+using EndpointHelpers.Models;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
@@ -18,7 +20,8 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
 
     protected abstract string GenerateAttributeName { get; }
     protected abstract string IgnoreAttributeName { get; }
-    protected abstract string OutputFileName { get; }
+    protected abstract string AttributeFileName { get; }
+    protected abstract string AttributeResourceName { get; }
     protected virtual bool SupportsAssemblyGenerateAttribute => true;
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -43,8 +46,24 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
         RegisterSourceOutput(context, controllers, assemblyHasGenerate);
     }
 
-    protected virtual void RegisterPostInitialization(IncrementalGeneratorInitializationContext context)
+    private void RegisterPostInitialization(IncrementalGeneratorInitializationContext context)
     {
+        context.RegisterPostInitializationOutput(ctx =>
+        {
+            ctx.AddEmbeddedAttributeDefinition();
+            ctx.AddSource(
+                AttributeFileName,
+                SourceText.From(ReadEmbeddedResource(AttributeResourceName), Encoding.UTF8));
+        });
+    }
+
+    private static string ReadEmbeddedResource(string name)
+    {
+        using var stream = typeof(ControllerGeneratorBase).Assembly.GetManifestResourceStream(name)
+            ?? throw new InvalidOperationException($"Embedded resource '{name}' was not found.");
+
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
     }
 
     protected virtual void RegisterSourceOutput(
@@ -57,8 +76,8 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
             (ctx, data) => Generate(ctx, data.Left, data.Right));
     }
 
-    protected abstract string BuildSource(
-        IReadOnlyList<ControllerModel> selectedControllers,
+    protected abstract IEnumerable<GeneratedFile> BuildSources(
+        ImmutableArray<ControllerModel> selectedControllers,
         bool hasJetbrainsAnnotations = false);
 
     private static bool IsAssemblyAttributeCandidate(AttributeSyntax attribute)
@@ -81,10 +100,10 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
     private ControllerModel? TransformController(GeneratorSyntaxContext context)
     {
         var classDeclaration = (ClassDeclarationSyntax)context.Node;
-        if (context.SemanticModel.GetDeclaredSymbol(classDeclaration) is not { } typeSymbol)
+        if (context.SemanticModel.GetDeclaredSymbol(classDeclaration) is not INamedTypeSymbol typeSymbol)
             return null;
 
-        var classHasGenerateAttribute = HasAnyAttribute(
+        var classHasGenerateAttribute = SymbolHelpers.HasAnyAttribute(
             typeSymbol,
             $"{EndpointHelpersNamespace}.{GenerateAttributeName}");
 
@@ -93,36 +112,48 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
             .Where(static method =>
                 method.MethodKind == MethodKind.Ordinary &&
                 method.DeclaredAccessibility == Accessibility.Public)
-            .Where(method => !HasAnyAttribute(method, $"{EndpointHelpersNamespace}.{IgnoreAttributeName}"))
-            .Where(static method => !HasAnyAttribute(method, NonActionAttributeName))
-            .Select(method => new ActionModel(
-                method.Name,
-                HasAnyAttribute(
+            .Where(method => !SymbolHelpers.HasAnyAttribute(method, $"{EndpointHelpersNamespace}.{IgnoreAttributeName}"))
+            .Where(static method => !SymbolHelpers.HasAnyAttribute(method, NonActionAttributeName))
+            .Select(method => new ActionModel
+            {
+                Name = method.Name,
+                HasGenerateAttribute = SymbolHelpers.HasAnyAttribute(
                     method,
                     $"{EndpointHelpersNamespace}.{GenerateAttributeName}"),
+                Parameters =
                 [
                     ..method.Parameters
-                        .Where(static parameter => !IsIgnoredParameter(parameter))
-                        .Select(static parameter => new ParameterModel(
-                            parameter.Type.ToDisplayString(),
-                            parameter.Name,
-                            parameter.IsOptional,
-                            GetOptionalDefaultLiteral(parameter)))
-                ]))
+                        .Where(static parameter => !ParameterHelpers.IsIgnoredParameter(parameter))
+                        .Where(static parameter => ParameterHelpers.IsRoutableParameter(parameter))
+                        .Select(static parameter => new ParameterModel
+                        {
+                            TypeName = parameter.Type.ToDisplayString(),
+                            Name = parameter.Name,
+                            IsOptional = parameter.IsOptional,
+                            DefaultValueLiteral = ParameterHelpers.GetOptionalDefaultLiteral(parameter)
+                        })
+                ]
+            })
+            .GroupBy(
+                static method => method.Name + "(" + string.Join(",", method.Parameters.Select(static parameter => parameter.TypeName)) + ")",
+                StringComparer.Ordinal)
+            .Select(static group => group.First())
             .ToImmutableArray();
 
-        var areaName = GetAreaName(typeSymbol) ?? GetAreaName(classDeclaration, context.SemanticModel);
+        var areaName = SymbolHelpers.GetAreaName(typeSymbol) ?? SymbolHelpers.GetAreaName(classDeclaration, context.SemanticModel);
 
-        return new ControllerModel(
-            GetMetadataName(typeSymbol),
-            typeSymbol.ToDisplayString(),
-            typeSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty,
-            typeSymbol.Name,
-            GetAccessibilityKeyword(typeSymbol.DeclaredAccessibility),
-            typeSymbol.IsSealed,
-            areaName,
-            classHasGenerateAttribute,
-            methods);
+        return new ControllerModel
+        {
+            MetadataName = SymbolHelpers.GetMetadataName(typeSymbol),
+            TypeName = typeSymbol.ToDisplayString(),
+            NamespaceName = typeSymbol.ContainingNamespace?.ToDisplayString() ?? string.Empty,
+            Name = typeSymbol.Name,
+            AccessibilityKeyword = SymbolHelpers.GetAccessibilityKeyword(typeSymbol.DeclaredAccessibility),
+            IsSealed = typeSymbol.IsSealed,
+            AreaName = areaName,
+            ClassHasGenerateAttribute = classHasGenerateAttribute,
+            Methods = methods
+        };
     }
 
     protected void Generate(
@@ -136,9 +167,8 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
         if (selectedControllers.Length == 0)
             return;
 
-        context.AddSource(
-            OutputFileName,
-            SourceText.From(BuildSource(selectedControllers, hasJetbrainsAnnotations), Encoding.UTF8));
+        foreach (var file in BuildSources(selectedControllers, hasJetbrainsAnnotations))
+            context.AddSource(file.FileName, SourceText.From(file.Content, Encoding.UTF8));
     }
 
     protected static ImmutableArray<ControllerModel> SelectControllers(
@@ -158,242 +188,30 @@ public abstract class ControllerGeneratorBase : IIncrementalGenerator
                     ? controller.Name.EndsWith("Controller", StringComparison.Ordinal)
                     : controller.ClassHasGenerateAttribute ||
                       controller.Methods.Any(static method => method.HasGenerateAttribute))
-                .Select(controller => controller with
+                .Select(controller =>
                 {
-                    Methods =
-                    [
+                    ImmutableArray<ActionModel> methods = [
                         ..controller.Methods
                             .Where(method =>
                                 assemblyHasGenerate || controller.ClassHasGenerateAttribute ||
                                 method.HasGenerateAttribute)
-                    ]
+                    ];
+                    return controller with { Methods = methods };
                 })
                 .Where(static controller => controller.Methods.Length > 0)
         ];
     }
 
-    private static bool HasAnyAttribute(ISymbol symbol, params string[] fullMetadataNames)
+    protected static string GetNamespaceFileName(string outputFileName, string? namespaceName)
     {
-        foreach (var attribute in symbol.GetAttributes())
-        {
-            var name = attribute.AttributeClass?.ToDisplayString();
-            if (name is null)
-                continue;
+        if (string.IsNullOrEmpty(namespaceName))
+            return outputFileName;
 
-            if (fullMetadataNames.Any(metadataName => name == metadataName))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        const string suffix = ".g.cs";
+        return outputFileName.EndsWith(suffix, StringComparison.Ordinal)
+            ? $"{outputFileName[..^suffix.Length]}.{namespaceName}{suffix}"
+            : $"{outputFileName}.{namespaceName}";
     }
 
-    private static string? GetAreaName(ISymbol symbol)
-    {
-        foreach (var attribute in symbol.GetAttributes())
-        {
-            if (!IsAreaAttribute(attribute.AttributeClass))
-                continue;
-
-            if (TryGetAreaValue(attribute) is { } value &&
-                !string.IsNullOrWhiteSpace(value))
-            {
-                return value;
-            }
-        }
-
-        return null;
-    }
-
-    private static bool IsAreaAttribute(INamedTypeSymbol? attributeClass)
-    {
-        return attributeClass is
-        {
-            Name: "AreaAttribute",
-            ContainingNamespace: { }
-        } && attributeClass.ContainingNamespace.ToDisplayString() == "Microsoft.AspNetCore.Mvc";
-    }
-
-    private static string? TryGetAreaValue(AttributeData attribute)
-    {
-        if (attribute.ConstructorArguments.Length > 0 &&
-            attribute.ConstructorArguments[0].Value is string constructorValue)
-        {
-            return constructorValue;
-        }
-
-        foreach (var namedArgument in attribute.NamedArguments)
-        {
-            if (namedArgument.Key == "RouteValue" &&
-                namedArgument.Value.Value is string routeValue)
-            {
-                return routeValue;
-            }
-        }
-
-        return null;
-    }
-
-    private static string? GetAreaName(ClassDeclarationSyntax classDeclaration, SemanticModel semanticModel)
-    {
-        foreach (var attribute in classDeclaration.AttributeLists.SelectMany(static list => list.Attributes))
-        {
-            var symbol = semanticModel.GetSymbolInfo(attribute).Symbol as IMethodSymbol;
-            if (symbol is not null)
-            {
-                if (!IsAreaAttribute(symbol.ContainingType))
-                    continue;
-            }
-            else
-            {
-                var simpleName = GetAttributeSimpleName(attribute.Name);
-                if (simpleName is not ("Area" or "AreaAttribute"))
-                    continue;
-            }
-
-            var args = attribute.ArgumentList?.Arguments;
-            if (args is null || args.Value.Count == 0)
-                continue;
-
-            foreach (var argument in args.Value)
-            {
-                if (TryGetStringConstant(semanticModel, argument.Expression) is not { } value)
-                    continue;
-
-                if (argument.NameEquals is null &&
-                    argument.NameColon is null &&
-                    !string.IsNullOrWhiteSpace(value))
-                {
-                    return value;
-                }
-
-                if (argument.NameEquals?.Name.Identifier.ValueText == "RouteValue" &&
-                    !string.IsNullOrWhiteSpace(value))
-                {
-                    return value;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private static string? GetAttributeSimpleName(NameSyntax nameSyntax)
-    {
-        return nameSyntax switch
-        {
-            IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
-            QualifiedNameSyntax qualified => qualified.Right.Identifier.ValueText,
-            AliasQualifiedNameSyntax aliasQualified => aliasQualified.Name.Identifier.ValueText,
-            _ => null
-        };
-    }
-
-    private static string? TryGetStringConstant(SemanticModel semanticModel, ExpressionSyntax expression)
-    {
-        if (semanticModel.GetConstantValue(expression) is { HasValue: true, Value: string value })
-            return value;
-
-        return expression is LiteralExpressionSyntax literal &&
-               literal.IsKind(SyntaxKind.StringLiteralExpression)
-            ? literal.Token.ValueText
-            : null;
-    }
-
-    private static string? GetOptionalDefaultLiteral(IParameterSymbol parameter)
-    {
-        if (!parameter.IsOptional)
-            return string.Empty;
-
-        if (!parameter.HasExplicitDefaultValue)
-            return parameter.Type.IsValueType ? "default" : "null";
-
-        var value = parameter.ExplicitDefaultValue;
-
-        if (value is null)
-            return "null";
-
-        if (parameter.Type.TypeKind == TypeKind.Enum)
-        {
-            var enumType = (INamedTypeSymbol)parameter.Type;
-
-            foreach (var member in enumType.GetMembers().OfType<IFieldSymbol>())
-            {
-                if (!member.HasConstantValue)
-                    continue;
-
-                if (Equals(member.ConstantValue, value))
-                    return $"{enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{member.Name}";
-            }
-
-            var underlying = SymbolDisplay.FormatPrimitive(value, quoteStrings: true, useHexadecimalNumbers: true);
-            return $"({enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){underlying}";
-        }
-
-        return SymbolDisplay.FormatPrimitive(value, quoteStrings: true, useHexadecimalNumbers: true);
-    }
-
-
-    private static bool IsIgnoredParameter(IParameterSymbol parameter)
-    {
-        if (parameter.Type is INamedTypeSymbol { Name: "CancellationToken" } namedType &&
-            namedType.ContainingNamespace?.ToDisplayString() == "System.Threading")
-        {
-            return true;
-        }
-
-        return HasAnyAttribute(parameter, "Microsoft.AspNetCore.Mvc.FromServicesAttribute");
-    }
-
-    private static string GetMetadataName(INamedTypeSymbol type)
-    {
-        var name = type.MetadataName;
-        var current = type.ContainingType;
-
-        while (current is not null)
-        {
-            name = $"{current.MetadataName}+{name}";
-            current = current.ContainingType;
-        }
-
-        var ns = type.ContainingNamespace?.ToDisplayString();
-        return string.IsNullOrEmpty(ns) ? name : $"{ns}.{name}";
-    }
-
-    protected sealed record ControllerModel(
-        string MetadataName,
-        string TypeName,
-        string NamespaceName,
-        string Name,
-        string AccessibilityKeyword,
-        bool IsSealed,
-        string? AreaName,
-        bool ClassHasGenerateAttribute,
-        ImmutableArray<ActionModel> Methods);
-
-    protected sealed record ActionModel(
-        string Name,
-        bool HasGenerateAttribute,
-        ImmutableArray<ParameterModel> Parameters);
-
-    protected sealed record ParameterModel(
-        string TypeName,
-        string Name,
-        bool IsOptional,
-        string? DefaultValueLiteral);
-
-    private static string GetAccessibilityKeyword(Accessibility accessibility)
-    {
-        return accessibility switch
-        {
-            Accessibility.Public => "public",
-            Accessibility.Internal => "internal",
-            Accessibility.Private => "private",
-            Accessibility.Protected => "protected",
-            Accessibility.ProtectedAndInternal => "private protected",
-            Accessibility.ProtectedOrInternal => "protected internal",
-            _ => "internal"
-        };
-    }
+    protected readonly record struct GeneratedFile(string FileName, string Content);
 }

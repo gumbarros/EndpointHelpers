@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using EndpointHelpers.Helpers;
+using EndpointHelpers.Models;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace EndpointHelpers;
 
@@ -12,11 +14,17 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
 {
     protected override string GenerateAttributeName => "GenerateLinkGeneratorAttribute";
     protected override string IgnoreAttributeName => "LinkGeneratorIgnoreAttribute";
-    protected override string OutputFileName => "LinkGeneratorExtensions.g.cs";
+    protected override string AttributeFileName => "LinkGeneratorAttributes.g.cs";
+    protected override string AttributeResourceName => "EndpointHelpers.LinkGeneratorAttributes.g.cs";
 
-    protected override string BuildSource(
-        IReadOnlyList<ControllerModel> selectedControllers,
+    protected override IEnumerable<GeneratedFile> BuildSources(
+        ImmutableArray<ControllerModel> selectedControllers,
         bool hasJetbrainsAnnotations = false)
+    {
+        yield return new GeneratedFile("LinkGeneratorExtensions.g.cs", BuildSource(selectedControllers));
+    }
+
+    private static string BuildSource(ImmutableArray<ControllerModel> selectedControllers)
     {
         var nonAreaControllers = selectedControllers
             .Where(static controller => string.IsNullOrWhiteSpace(controller.AreaName))
@@ -42,10 +50,14 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
 
         foreach (var controller in selectedControllers)
         {
-            var controllerName = controller.Name.Replace("Controller", string.Empty);
-            var helperClassName = controller.AreaName is { Length: > 0 }
-                ? $"{controller.AreaName}Area{controller.Name}LinkGenerator"
-                : $"{controller.Name}LinkGenerator";
+            var routeControllerName = IdentifierHelpers.TrimControllerSuffix(controller.Name);
+            var uniqueName = IdentifierHelpers.GetUniqueControllerIdentifier(controller, selectedControllers);
+            var areaIdentifier = string.IsNullOrWhiteSpace(controller.AreaName)
+                ? null
+                : IdentifierHelpers.ToIdentifier(controller.AreaName!);
+            var helperClassName = areaIdentifier is not null
+                ? $"{areaIdentifier}Area{uniqueName}LinkGenerator"
+                : $"{uniqueName}LinkGenerator";
 
             sb.AppendLine($"public sealed class {helperClassName}(LinkGenerator linkGenerator)");
             sb.AppendLine("{");
@@ -64,8 +76,8 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
                 sb.AppendLine("    {");
                 sb.AppendLine("        return linkGenerator.GetPathByAction(");
                 sb.AppendLine($"            action: \"{method.Name}\",");
-                sb.AppendLine($"            controller: \"{controllerName}\",");
-                var hasArea = !string.IsNullOrWhiteSpace(controller.AreaName);
+                sb.AppendLine($"            controller: \"{routeControllerName}\",");
+                var hasArea = areaIdentifier is not null;
                 sb.AppendLine(method.Parameters.Length == 0 && !hasArea
                     ? "            values: null)!;"
                     : "            values: new");
@@ -75,7 +87,7 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
                     sb.AppendLine("            {");
 
                     sb.AppendLine(hasArea
-                        ? $"                area = \"{EscapeStringLiteral(controller.AreaName!)}\","
+                        ? $"                area = \"{IdentifierHelpers.EscapeStringLiteral(controller.AreaName!)}\","
                         : "                area = string.Empty,");
                     foreach (var parameter in method.Parameters)
                         sb.AppendLine($"                {parameter.Name},");
@@ -91,7 +103,7 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
                 sb.AppendLine("        return linkGenerator.GetPathByAction(");
                 sb.AppendLine("            httpContext,");
                 sb.AppendLine($"            action: \"{method.Name}\",");
-                sb.AppendLine($"            controller: \"{controllerName}\",");
+                sb.AppendLine($"            controller: \"{routeControllerName}\",");
                 sb.AppendLine(method.Parameters.Length == 0 && !hasArea
                     ? "            values: null)!;"
                     : "            values: new");
@@ -101,7 +113,7 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
                     sb.AppendLine("            {");
 
                     if (hasArea)
-                        sb.AppendLine($"                area = \"{EscapeStringLiteral(controller.AreaName!)}\",");
+                        sb.AppendLine($"                area = \"{IdentifierHelpers.EscapeStringLiteral(controller.AreaName!)}\",");
 
                     foreach (var parameter in method.Parameters)
                         sb.AppendLine($"                {parameter.Name},");
@@ -118,7 +130,7 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
 
         foreach (var areaGroup in areaGroups)
         {
-            var areaIdentifier = ToIdentifier(areaGroup.Key);
+            var areaIdentifier = IdentifierHelpers.ToIdentifier(areaGroup.Key);
             var areaHelperClassName = $"{areaIdentifier}AreaLinkGenerator";
 
             sb.AppendLine($"public sealed class {areaHelperClassName}(LinkGenerator linkGenerator)");
@@ -126,8 +138,9 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
 
             foreach (var controller in areaGroup.OrderBy(static controller => controller.MetadataName, StringComparer.Ordinal))
             {
-                var helperClassName = $"{areaIdentifier}Area{controller.Name}LinkGenerator";
-                var propertyName = controller.Name.Replace("Controller", string.Empty);
+                var uniqueName = IdentifierHelpers.GetUniqueControllerIdentifier(controller, selectedControllers);
+                var helperClassName = $"{areaIdentifier}Area{uniqueName}LinkGenerator";
+                var propertyName = IdentifierHelpers.TrimControllerSuffix(uniqueName);
 
                 sb.AppendLine($"    public {helperClassName} {propertyName} => new {helperClassName}(linkGenerator);");
                 sb.AppendLine();
@@ -144,8 +157,9 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
 
         foreach (var controller in nonAreaControllers)
         {
-            var helperClassName = $"{controller.Name}LinkGenerator";
-            var propertyName = controller.Name.Replace("Controller", string.Empty);
+            var uniqueName = IdentifierHelpers.GetUniqueControllerIdentifier(controller, selectedControllers);
+            var helperClassName = $"{uniqueName}LinkGenerator";
+            var propertyName = IdentifierHelpers.TrimControllerSuffix(uniqueName);
 
             sb.AppendLine($"        public {helperClassName} {propertyName} => new {helperClassName}(linkGenerator);");
             sb.AppendLine();
@@ -153,7 +167,7 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
 
         foreach (var areaGroup in areaGroups)
         {
-            var areaIdentifier = ToIdentifier(areaGroup.Key);
+            var areaIdentifier = IdentifierHelpers.ToIdentifier(areaGroup.Key);
             var areaHelperClassName = $"{areaIdentifier}AreaLinkGenerator";
 
             sb.AppendLine($"        public {areaHelperClassName} {areaIdentifier} => new {areaHelperClassName}(linkGenerator);");
@@ -165,32 +179,4 @@ public sealed class LinkGeneratorGenerator : ControllerGeneratorBase
 
         return sb.ToString();
     }
-
-    private static string EscapeStringLiteral(string value)
-    {
-        return value
-            .Replace("\\", "\\\\")
-            .Replace("\"", "\\\"");
-    }
-
-    private static string ToIdentifier(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-            return "_";
-
-        var sb = new StringBuilder(value.Length + 1);
-
-        if (!IsIdentifierStart(value[0]))
-            sb.Append('_');
-
-        foreach (var c in value)
-            sb.Append(IsIdentifierPart(c) ? c : '_');
-
-        var identifier = sb.Length == 0 ? "_" : sb.ToString();
-        return SyntaxFacts.GetKeywordKind(identifier) == SyntaxKind.None ? identifier : "@" + identifier;
-    }
-
-    private static bool IsIdentifierStart(char c) => c == '_' || char.IsLetter(c);
-
-    private static bool IsIdentifierPart(char c) => c == '_' || char.IsLetterOrDigit(c);
 }

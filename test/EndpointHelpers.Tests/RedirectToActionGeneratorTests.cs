@@ -33,6 +33,29 @@ public sealed class RedirectToActionGeneratorTests
                                             }
                                             """;
 
+    private const string AreaControllerSource = """
+
+                                                using Microsoft.AspNetCore.Mvc;
+
+                                                namespace EndpointHelpers
+                                                {
+                                                    [System.AttributeUsage(System.AttributeTargets.Method | System.AttributeTargets.Class | System.AttributeTargets.Assembly)]
+                                                    public sealed class GenerateRedirectToActionAttribute : System.Attribute;
+                                                }
+
+                                                namespace Test
+                                                {
+                                                    using EndpointHelpers;
+
+                                                    [Area("Admin")]
+                                                    public partial class UsersController : Controller
+                                                    {
+                                                        [GenerateRedirectToAction]
+                                                        public IActionResult Index(int id) => Ok();
+                                                    }
+                                                }
+                                                """;
+
     [Fact]
     public void Generates_Partial_Controller_Block()
     {
@@ -69,7 +92,19 @@ public sealed class RedirectToActionGeneratorTests
         Assert.Contains("\"Home\",", generated);
     }
 
+    [Fact]
+    public void Includes_Area_In_Redirect()
+    {
+        var generated = Run(AreaControllerSource);
+
+        Assert.Contains("{ \"Area\", \"Admin\" }", generated);
+        Assert.Contains("\"Users\",", generated);
+    }
+
     private static string Run()
+        => Run(ControllerSource);
+
+    private static string Run(string source)
     {
         var generator = new RedirectToActionGenerator();
 
@@ -77,7 +112,7 @@ public sealed class RedirectToActionGeneratorTests
 
         var compilation = CSharpCompilation.Create(
             "Test",
-            [CSharpSyntaxTree.ParseText(ControllerSource)],
+            [CSharpSyntaxTree.ParseText(source)],
             [
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Controller).Assembly.Location),
@@ -87,7 +122,7 @@ public sealed class RedirectToActionGeneratorTests
         var result = driver.RunGenerators(compilation).GetRunResult();
 
         return result.GeneratedTrees
-            .Single(tree => tree.FilePath.EndsWith("RedirectToActionControllers.g.cs"))
+            .Single(tree => tree.FilePath.Contains("RedirectToActionControllers"))
             .GetText()
             .ToString();
     }

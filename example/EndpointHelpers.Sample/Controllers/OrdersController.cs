@@ -117,6 +117,7 @@ public sealed partial class OrdersController : Controller
         return RedirectToError();
     }
     
+    [NonAction]
     public IActionResult RedirectToError()
     {
         return RedirectToAction("Error", "Home");

@@ -34,7 +34,7 @@ Add the NuGet package:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="EndpointHelpers" Version="2.0.1"/>
+  <PackageReference Include="EndpointHelpers" Version="2.0.2"/>
 </ItemGroup>
 ```
 
@@ -43,6 +43,10 @@ or
 ```bash
 dotnet add package EndpointHelpers
 ```
+
+## Requirements
+
+The generated code uses C# 14 extension members (`extension(...)` blocks), so consumers must compile with a C# 14 toolchain (the .NET 10 SDK or later).
 
 Optional (for better IntelliSense in JetBrains IDEs):
 
@@ -138,6 +142,7 @@ You can exclude methods using:
 - Redirect helpers are generated as `partial` members in the controller namespace.
 - Extension properties use the controller name without the `Controller` suffix.
 - Controllers with `[Area("...")]` are grouped by area, so generated access becomes `Url.<Area>.<Controller>` and `Links.<Area>.<Controller>`.
+- Only route-value-compatible parameters are included: simple types (`int`, `string`, `Guid`, `DateTime`, enums, nullables, ...) or parameters marked `[FromRoute]`/`[FromQuery]`/`[FromHeader]`/`[FromForm]`. Body-bound parameters (complex types or `[FromBody]`) are excluded, and `CancellationToken`/`[FromServices]` parameters are always ignored.
 
 ### Controller and action discovery
 ```csharp
