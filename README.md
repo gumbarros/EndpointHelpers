@@ -141,7 +141,7 @@ You can exclude methods using:
 - UrlHelper and LinkGenerator helpers are placed in the `EndpointHelpers` namespace.
 - Redirect helpers are generated as `partial` members in the controller namespace.
 - Extension properties use the controller name without the `Controller` suffix.
-- Controllers with `[Area("...")]` are grouped by area, so generated access becomes `Url.<Area>.<Controller>` and `Links.<Area>.<Controller>`.
+- Controllers with `[Area("...")]` are grouped by area, so generated access becomes `Url.<Area>.<Controller>` and `LinkGenerator.<Area>.<Controller>`.
 - Only route-value-compatible parameters are included: simple types (`int`, `string`, `Guid`, `DateTime`, enums, nullables, ...) or parameters marked `[FromRoute]`/`[FromQuery]`/`[FromHeader]`/`[FromForm]`. Body-bound parameters (complex types or `[FromBody]`) are excluded, and `CancellationToken`/`[FromServices]` parameters are always ignored.
 
 ### Controller and action discovery
